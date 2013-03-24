@@ -13,7 +13,7 @@ public class BorWriter {
 		
 	}
 	
-	public void FilSqu(int Len, int Hig, int Star, int Val)
+	public void FilSqu(int Star, int Hig, int Len, int Val)
 	{
 		
 		int Num = Star;
@@ -97,7 +97,7 @@ public class BorWriter {
 		
 		FilSqu((18*40 + 27), 3, 4, 11);
 		
-		FilSqu((17*40 + 29), 3, 2, 11);
+		FilSqu((15*40 + 29), 3, 2, 11);
 		
 		//Hackney.
 		
@@ -119,7 +119,7 @@ public class BorWriter {
 		
 		//Havering.
 		
-		FilSqu((21*40 + 32), 19, 6, 16);
+		FilSqu((21*40 + 34), 19, 6, 16);
 		
 		//Hillingdon.
 		
@@ -201,16 +201,25 @@ public class BorWriter {
 	
 	public static void main(String[] args) {
 			
-		String content = null;
+		String content = new String();
 		
 		BorWriter bor = new BorWriter();
 		
 		bor.SetBor();
 		
+		System.out.println("start!");
+		
 		for(int i = 0; i < 1600; i++)
 		{
-			System.out.println(+bor.Bor[i] + "\n");
-			content += +bor.Bor[i] + " ";
+			
+			if(bor.Bor[i] == 0)
+			{
+				
+				System.out.println((i%40) + " " + (int)(i/40));
+				
+			}
+
+			content += bor.Bor[i] + " ";
 			
 		}
 			
