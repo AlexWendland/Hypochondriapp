@@ -11,22 +11,6 @@ public class Analysis {
 		
 		Grid = new Cell[1600];
 		
-		int i = 0;
-		
-		while( i < 371)
-		{
-			
-			Grid[i].SetBor(1);
-			
-			i++;
-			
-			if(i%40 > 10)
-				i += 29;
-			
-		}
-		
-		
-			
 	}
 	
 	public int CordConv(double x, double y) 
