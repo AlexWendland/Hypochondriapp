@@ -32,6 +32,23 @@ public class Cell {
 		
 	}
 	
+	public void SetIll(int ill)
+	{
+	
+		Ill = ill;
+		
+	}
+	
+	public void AddPop(int pop)
+	{
+		
+		Pop += pop;
+		
+		if(Pop < 0)
+			Pop = 0;
+		
+	}
+	
 	public void AddIll(int ill)
 	{
 		
@@ -41,5 +58,27 @@ public class Cell {
 			Ill = 0;
 		
 	}
+	
+	public int GetIll()
+	{
+		
+		return(Ill);
+		
+	}
+	
+	public int GetPop()
+	{
+		
+		return(Pop);
+		
+	}
+	
+	public int GetBor()
+	{
+		
+		return(Bor);
+		
+	}
+	
 	
 }
