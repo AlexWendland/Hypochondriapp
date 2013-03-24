@@ -114,4 +114,101 @@ public class Analysis {
 		
 	}
 	
+	public void Move(double xIn, double yIn, double xOut, double yOut, double Num)
+	{
+	
+		int InPos = CordConv(xIn, yIn);
+		int OutPos = CordConv(xOut, yOut);
+		int IllMove = 0;
+		
+		if (InPos > -1)
+		{
+			
+			for(int i = -1; i < 2; i++)
+			{
+				
+				int a = CordConv(xIn + 0.02, yIn + (i*0.01));
+				
+				if(a > -1)
+				{
+					
+					Grid[a].AddPop((int)-Num/9);
+					int ToAdd = Grid[a].GetIll()/18;
+					Grid[a].AddIll(-ToAdd);
+					IllMove += ToAdd;
+					
+				}
+				
+				int b = CordConv(xIn, yIn + (i*0.01));
+				
+				if(b > -1)
+				{
+					
+					Grid[b].AddPop((int)-Num/9);
+					int ToAdd = Grid[b].GetIll()/18;
+					Grid[b].AddIll(-ToAdd);
+					IllMove += ToAdd;
+					
+				}
+				
+				int c = CordConv(xIn - 0.02, yIn + (i*0.01));
+				
+				if(c > -1)
+				{
+					
+					Grid[c].AddPop((int)-Num/9);
+					int ToAdd = Grid[c].GetIll()/18;
+					Grid[c].AddIll(-ToAdd);
+					IllMove += ToAdd;
+					
+				}
+				
+			}
+			
+		}
+		
+		if(OutPos > -1)
+		{
+			
+			for(int i = -1; i < 2; i++)
+			{
+				
+				int a = CordConv(xOut + 0.02, yOut + (i*0.01));
+				
+				if(a > -1)
+				{
+					
+					Grid[a].AddPop((int)Num/9);
+					Grid[a].AddIll((int)IllMove/9);
+					
+				}
+				
+				int b = CordConv(xOut, yOut + (i*0.01));
+				
+				if(b > -1)
+				{
+					
+					Grid[b].AddPop((int)Num/9);
+					Grid[b].AddIll((int)IllMove/9);
+					
+				}
+				
+				int c = CordConv(xOut - 0.02, yOut + (i*0.01));
+				
+				if(c > -1)
+				{
+					
+					Grid[c].AddPop((int)Num/9);
+					Grid[c].AddIll((int)IllMove/9);
+					
+				}
+				
+			}
+			
+		}
+		
+	}
+	
+	
+	
 }
