@@ -81,31 +81,32 @@ public class TwitterManager implements Runnable
             public void onStatus(Status status) { //Need to alter this method to send tweets to Analysis module (just geolocation data).
             	if(status.getGeoLocation() == null) return;
                 System.out.println("@" + status.getUser().getScreenName() + ":" + status.getPlace() + ":" + status.getGeoLocation() + " - " + status.getText());
+                //Most tweets have absolutely no location data, perhaps a function that can retrieve the place of a person and then assume they are at home (good assumption because they are sick).
             }
             
-            //Make all these save to log or something, maybe just do nothing
+            //Make all these save to log or something, maybe just do nothing.
             @Override
-            public void onDeletionNotice(StatusDeletionNotice statusDeletionNotice) {
+            public void onDeletionNotice(StatusDeletionNotice statusDeletionNotice) { //Don't care.
                 System.out.println("Got a status deletion notice id:" + statusDeletionNotice.getStatusId());
             }
 
             @Override
-            public void onTrackLimitationNotice(int numberOfLimitedStatuses) {
+            public void onTrackLimitationNotice(int numberOfLimitedStatuses) { //Log these, means server can't deliver that many tweets.
                 System.out.println("Got track limitation notice:" + numberOfLimitedStatuses);
             }
 
             @Override
-            public void onScrubGeo(long userId, long upToStatusId) {
+            public void onScrubGeo(long userId, long upToStatusId) { //Ignore, 14 day old posts get geo data scrubbed which is this warning.
                 System.out.println("Got scrub_geo event userId:" + userId + " upToStatusId:" + upToStatusId);
             }
 
             @Override
-            public void onStallWarning(StallWarning warning) {
+            public void onStallWarning(StallWarning warning) { //Log these ones, means falling behind in queue of message stream.
                 System.out.println("Got stall warning:" + warning);
             }
 
             @Override
-            public void onException(Exception ex) {
+            public void onException(Exception ex) { //Should really log and deal with this in some way was opposed to ignoring it.
                 ex.printStackTrace();
             }
         };
