@@ -15,8 +15,6 @@ import twitter4j.conf.ConfigurationBuilder;
 
 public class TwitterManager implements Runnable
 {
-	public static final String RESOURCES = "./res/";
-	
 	private static boolean shutdown = false;
 	
 	private Properties twitterProperties;
@@ -26,10 +24,10 @@ public class TwitterManager implements Runnable
 		init();
 	}
 	
-	public void init() //Should read in properties file to get tokens.
+	public void init() //Retrives tokens from twitter.properties
 	{
 		twitterProperties = new Properties();
-		File file = new File(RESOURCES + "twitter.properties");
+		File file = new File("./res/twitter.properties");
 		
 		try
 		{
@@ -45,14 +43,14 @@ public class TwitterManager implements Runnable
 		}
 		catch(Exception e)
 		{
-			System.err.println("An exception happened loading.");
+			System.err.println("Could not load file \"twitter.properties\", unable to continue.\nExiting...");
 			System.err.println(e.getMessage());
 			e.printStackTrace();
 			System.exit(-1);
 		}
 	}
 	
-	public void shutdown()
+	public void shutdown() //Tells the scraper to stop and clean up properly.
 	{
 		shutdown = true;
 	}
@@ -60,29 +58,32 @@ public class TwitterManager implements Runnable
 	@Override
 	public void run() 
 	{
-		
-		ConfigurationBuilder configBuilder = new ConfigurationBuilder();
+		//Sets required configurations.
+		ConfigurationBuilder configBuilder = new ConfigurationBuilder(); //Check for some settings I may have missed.
     	configBuilder.setOAuthConsumerKey(twitterProperties.getProperty("oauth.consumerKey"));
     	configBuilder.setOAuthConsumerSecret(twitterProperties.getProperty("oauth.consumerSecret"));
     	configBuilder.setOAuthAccessToken(twitterProperties.getProperty("oauth.accessToken"));
     	configBuilder.setOAuthAccessTokenSecret(twitterProperties.getProperty("oauth.accessTokenSecret"));
         TwitterStream twitterStream = new TwitterStreamFactory(configBuilder.build()).getInstance();
 		
+        //Query to search for.
 		FilterQuery query = new FilterQuery();
 		double[][] location = {{51.3, -0.5}, {51.7, 0.3}};
 		query.locations(location);
-		String[] temp = {"feel sick", "feeling sick", "gotten sick","flu","influenza","bedridden", "cough"};
+		String[] temp = {"feel sick", "feeling sick", "gotten sick","flu","influenza","bedridden", "cough"}; //Need refining
 		query.track(temp);
+		//Query does keywords OR location, not both, need to figure out a way to get required tweets. Perhaps keywords in query then remove any with incorrect locations from that point.
 		
+		//Callback functions to certain events (onStatus is the important one).
 		StatusListener listener = new StatusListener()
 		{
             @Override
-            public void onStatus(Status status) {
+            public void onStatus(Status status) { //Need to alter this method to send tweets to Analysis module (just geolocation data).
             	if(status.getGeoLocation() == null) return;
-            	
                 System.out.println("@" + status.getUser().getScreenName() + ":" + status.getPlace() + ":" + status.getGeoLocation() + " - " + status.getText());
             }
-
+            
+            //Make all these save to log or something, maybe just do nothing
             @Override
             public void onDeletionNotice(StatusDeletionNotice statusDeletionNotice) {
                 System.out.println("Got a status deletion notice id:" + statusDeletionNotice.getStatusId());
@@ -110,10 +111,10 @@ public class TwitterManager implements Runnable
         };
 		
         
-        twitterStream.addListener(listener);
-        twitterStream.filter(query);
+        twitterStream.addListener(listener); //Sets up the callbacks
+        twitterStream.filter(query); //Starts the stream with the required query.
         
-        while(!shutdown)
+        while(!shutdown) //Waits until shutdown
         try
         {
         	synchronized(this)
@@ -123,9 +124,7 @@ public class TwitterManager implements Runnable
         }
         catch(InterruptedException e){}
         
-        twitterStream.shutdown();
-        twitterStream.cleanUp();
-
+        twitterStream.shutdown(); //Shuts down the stream nicely.
 	}
 }
 
