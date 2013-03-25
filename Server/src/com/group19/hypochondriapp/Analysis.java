@@ -10,6 +10,8 @@ public class Analysis {
 	
 	private Cell[] Grid;
 	
+	//Raw data, on Uk and twitter use.
+	
 	public static final int UKPOP = 62641000;
 	public static final int UKTWIT = 10000000;
 	
@@ -21,6 +23,8 @@ public class Analysis {
 		int[] PopDen = new int[33];
 		
 		BufferedReader br = null;
+		
+		//Takes in Densities, in sets it to the array, then sets borough and pop to cells.
 		
 		try 
 		{
@@ -79,6 +83,8 @@ public class Analysis {
 		
 	}
 	
+	//Convertes from Long and latitude to cell position.
+	
 	public int CordConv(double x, double y) 
 	{
 		
@@ -100,6 +106,8 @@ public class Analysis {
 		
 	}
 	
+	//Function will be called, to add a tweet.
+	
 	public void AddTweet(double x, double y)
 	{
 		
@@ -113,6 +121,8 @@ public class Analysis {
 		}
 		
 	}
+	
+	//Function will be called with train travel data.
 	
 	public void Move(double xIn, double yIn, double xOut, double yOut, double Num)
 	{
@@ -208,7 +218,5 @@ public class Analysis {
 		}
 		
 	}
-	
-	
 	
 }

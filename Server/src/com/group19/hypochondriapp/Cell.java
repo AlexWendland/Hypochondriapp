@@ -62,21 +62,21 @@ public class Cell {
 	public int GetIll()
 	{
 		
-		return(Ill);
+		return Ill;
 		
 	}
 	
 	public int GetPop()
 	{
 		
-		return(Pop);
+		return Pop;
 		
 	}
 	
 	public int GetBor()
 	{
 		
-		return(Bor);
+		return Bor;
 		
 	}
 	

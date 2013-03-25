@@ -36,6 +36,8 @@ public class BorWriter {
 		
 	}
 	
+	//Hard coding Boroughs.
+	
 	public void SetBor()
 	{
 		
@@ -199,6 +201,8 @@ public class BorWriter {
 		
 	}
 	
+	//Only reason main exists is to write to file.
+	
 	public static void main(String[] args) {
 			
 		String content = new String();
@@ -207,7 +211,7 @@ public class BorWriter {
 		
 		bor.SetBor();
 		
-		System.out.println("start!");
+		System.out.println("Start!");
 		
 		for(int i = 0; i < 1600; i++)
 		{
@@ -226,7 +230,7 @@ public class BorWriter {
 		try {
 				 
 	 
-			File file = new File("BoroughPlace.txt");
+			File file = new File("res/BoroughPlace.txt");
 				
 			if (!file.exists()) {
 				file.createNewFile();

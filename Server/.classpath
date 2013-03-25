@@ -7,5 +7,10 @@
 	<classpathentry kind="lib" path="C:/Users/Jack/Hypochondiapp/twitter4j/twitter4j-examples-3.0.3.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Jack/Hypochondiapp/twitter4j/twitter4j-media-support-3.0.3.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Jack/Hypochondiapp/twitter4j/twitter4j-stream-3.0.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/Users/Alexander Wendland/My program files/eclipse/Twitter4J/twitter4j-async-3.0.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/Users/Alexander Wendland/My program files/eclipse/Twitter4J/twitter4j-core-3.0.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/Users/Alexander Wendland/My program files/eclipse/Twitter4J/twitter4j-examples-3.0.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/Users/Alexander Wendland/My program files/eclipse/Twitter4J/twitter4j-media-support-3.0.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/Users/Alexander Wendland/My program files/eclipse/Twitter4J/twitter4j-stream-3.0.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
