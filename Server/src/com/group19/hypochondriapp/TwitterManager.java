@@ -5,12 +5,20 @@ import java.io.FileInputStream;
 import java.util.Properties;
 
 import twitter4j.FilterQuery;
+import twitter4j.GeoLocation;
+import twitter4j.GeoQuery;
+import twitter4j.Place;
+import twitter4j.ResponseList;
 import twitter4j.StallWarning;
 import twitter4j.Status;
 import twitter4j.StatusDeletionNotice;
 import twitter4j.StatusListener;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
 import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
+import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 
 public class TwitterManager implements Runnable
@@ -18,13 +26,16 @@ public class TwitterManager implements Runnable
 	private static boolean shutdown = false;
 	
 	private Properties twitterProperties;
+	private Configuration config;
 	
 	public TwitterManager()
 	{
 		init();
 	}
 	
-	public void init() //Retrives tokens from twitter.properties
+
+	
+	public void init() //Retrives tokens from twitter.properties and sets up configuration
 	{
 		twitterProperties = new Properties();
 		File file = new File("./res/twitter.properties");
@@ -47,6 +58,15 @@ public class TwitterManager implements Runnable
 			e.printStackTrace();
 			System.exit(-1);
 		}
+		
+		//Sets configuration details
+		ConfigurationBuilder configBuilder = new ConfigurationBuilder(); //Check for some settings I may have missed.
+    	configBuilder.setOAuthConsumerKey(twitterProperties.getProperty("oauth.consumerKey"));
+    	configBuilder.setOAuthConsumerSecret(twitterProperties.getProperty("oauth.consumerSecret"));
+    	configBuilder.setOAuthAccessToken(twitterProperties.getProperty("oauth.accessToken"));
+    	configBuilder.setOAuthAccessTokenSecret(twitterProperties.getProperty("oauth.accessTokenSecret"));
+    	
+    	config = configBuilder.build();
 	}
 	
 	public void shutdown() //Tells the scraper to stop and clean up properly.
@@ -56,24 +76,20 @@ public class TwitterManager implements Runnable
 	}
 	
 	@Override
-	public void run() 
+	public void run()
 	{
 		MainManager.logMessage("#TwitterManager: Starting Twitter stream");
 		
-		//Sets required configurations.
-		ConfigurationBuilder configBuilder = new ConfigurationBuilder(); //Check for some settings I may have missed.
-    	configBuilder.setOAuthConsumerKey(twitterProperties.getProperty("oauth.consumerKey"));
-    	configBuilder.setOAuthConsumerSecret(twitterProperties.getProperty("oauth.consumerSecret"));
-    	configBuilder.setOAuthAccessToken(twitterProperties.getProperty("oauth.accessToken"));
-    	configBuilder.setOAuthAccessTokenSecret(twitterProperties.getProperty("oauth.accessTokenSecret"));
-        TwitterStream twitterStream = new TwitterStreamFactory(configBuilder.build()).getInstance();
+        TwitterStream twitterStream = new TwitterStreamFactory(config).getInstance();
 		
+        
+        
         //Query to search for.
 		FilterQuery query = new FilterQuery();
 		double[][] location = {{51.3, -0.5}, {51.7, 0.3}};
 		query.locations(location);
-		String[] temp = {"feel sick", "feeling sick", "gotten sick","flu","influenza","bedridden", "cough"}; //Need refining
-		query.track(temp);
+		//String[] temp = {"feel sick", "feeling sick", "gotten sick","flu","influenza","bedridden", "cough"}; //Need refining
+		//query.track(temp);
 		//Query does keywords OR location, not both, need to figure out a way to get required tweets. Perhaps keywords in query then remove any with incorrect locations from that point.
 		
 		//Callback functions to certain events (onStatus is the important one).
@@ -143,6 +159,34 @@ public class TwitterManager implements Runnable
         
         MainManager.logMessage("#TwitterManager: Shutting down stream");
         twitterStream.shutdown(); //Shuts down the stream nicely.
+	}
+	
+	public String[] getLocation(double lon, double lat)
+	{
+		GeoQuery query = new GeoQuery(new GeoLocation(lon, lat));
+        
+        Twitter twitter = new TwitterFactory(config).getInstance();
+        ResponseList<Place> places = null;
+        
+        try
+        {
+        	places = twitter.searchPlaces(query);
+        }
+        catch(TwitterException e)
+        {
+        	MainManager.logMessage("#TwitterManager: Could not get location data");
+        	e.printStackTrace();
+        }
+        
+        if(places == null) return null;
+        
+        String[] placeNames = new String[places.size()];
+        for(int i = 0; i < places.size(); i++)
+        {
+        	placeNames[i] = places.get(i).getFullName();
+        }
+        
+        return placeNames;
 	}
 }
 

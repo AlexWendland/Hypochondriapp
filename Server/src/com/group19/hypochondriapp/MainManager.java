@@ -75,8 +75,6 @@ public class MainManager
 		Thread twitter = new Thread(twitterManager);
 		twitter.start();
 		
-		
-		
 		//Tests for the twitter miner.
 		System.in.read();
 		
@@ -89,5 +87,7 @@ public class MainManager
 		
 		cleanup();
 	}
+	
+	public static TwitterManager getTwitterManager() { return twitterManager; }
 
 }
