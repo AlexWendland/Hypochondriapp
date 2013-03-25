@@ -33,7 +33,7 @@ public class TwitterManager implements Runnable
 		{
 			if(!file.exists())
 			{
-				System.err.println("File \"twitter.properties\" cannot be found, unable to contact Twitter servers.\nExiting...");
+				MainManager.logMessage("#TwitterManager: File \"twitter.properties\" cannot be found");
 				System.exit(-1);
 			}
 			else
@@ -43,8 +43,7 @@ public class TwitterManager implements Runnable
 		}
 		catch(Exception e)
 		{
-			System.err.println("Could not load file \"twitter.properties\", unable to continue.\nExiting...");
-			System.err.println(e.getMessage());
+			MainManager.logMessage("#TwitterManager: Could not load file \"twitter.properties\"");
 			e.printStackTrace();
 			System.exit(-1);
 		}
@@ -53,11 +52,14 @@ public class TwitterManager implements Runnable
 	public void shutdown() //Tells the scraper to stop and clean up properly.
 	{
 		shutdown = true;
+		MainManager.logMessage("#TwitterManager: shutdown=true");
 	}
 	
 	@Override
 	public void run() 
 	{
+		MainManager.logMessage("#TwitterManager: Starting Twitter stream");
+		
 		//Sets required configurations.
 		ConfigurationBuilder configBuilder = new ConfigurationBuilder(); //Check for some settings I may have missed.
     	configBuilder.setOAuthConsumerKey(twitterProperties.getProperty("oauth.consumerKey"));
@@ -78,42 +80,56 @@ public class TwitterManager implements Runnable
 		StatusListener listener = new StatusListener()
 		{
             @Override
-            public void onStatus(Status status) { //Need to alter this method to send tweets to Analysis module (just geolocation data).
-            	if(status.getGeoLocation() == null) return;
+            public void onStatus(Status status) 
+            { //Need to alter this method to send tweets to Analysis module (just geolocation data).
+            	//if(status.getGeoLocation() == null) return;
+            	
+            	MainManager.logMessage("#TwitterManager: Tweet received");
                 System.out.println("@" + status.getUser().getScreenName() + ":" + status.getPlace() + ":" + status.getGeoLocation() + " - " + status.getText());
+                
                 //Most tweets have absolutely no location data, perhaps a function that can retrieve the place of a person and then assume they are at home (good assumption because they are sick).
             }
             
             //Make all these save to log or something, maybe just do nothing.
             @Override
-            public void onDeletionNotice(StatusDeletionNotice statusDeletionNotice) { //Don't care.
-                System.out.println("Got a status deletion notice id:" + statusDeletionNotice.getStatusId());
+            public void onDeletionNotice(StatusDeletionNotice statusDeletionNotice) 
+            { //Don't care.
+                //System.out.println("Got a status deletion notice id:" + statusDeletionNotice.getStatusId());
             }
 
             @Override
-            public void onTrackLimitationNotice(int numberOfLimitedStatuses) { //Log these, means server can't deliver that many tweets.
-                System.out.println("Got track limitation notice:" + numberOfLimitedStatuses);
+            public void onTrackLimitationNotice(int numberOfLimitedStatuses) 
+            { //Log these, means server can't deliver that many tweets.
+            	MainManager.logMessage("#TwitterManager: Got track limitation notice: " + numberOfLimitedStatuses + "missed statuses");
+                //System.out.println("Got track limitation notice:" + numberOfLimitedStatuses);
             }
 
             @Override
-            public void onScrubGeo(long userId, long upToStatusId) { //Ignore, 14 day old posts get geo data scrubbed which is this warning.
-                System.out.println("Got scrub_geo event userId:" + userId + " upToStatusId:" + upToStatusId);
+            public void onScrubGeo(long userId, long upToStatusId) 
+            { //Ignore, 14 day old posts get geo data scrubbed which is this warning.
+                //System.out.println("Got scrub_geo event userId:" + userId + " upToStatusId:" + upToStatusId);
             }
 
             @Override
-            public void onStallWarning(StallWarning warning) { //Log these ones, means falling behind in queue of message stream.
-                System.out.println("Got stall warning:" + warning);
+            public void onStallWarning(StallWarning warning) 
+            { //Log these ones, means falling behind in queue of message stream.
+            	MainManager.logMessage("#TwitterManager: Got stall warning: " + warning.getPercentFull() + "%");
+                //System.out.println("Got stall warning:" + warning);
             }
 
             @Override
-            public void onException(Exception ex) { //Should really log and deal with this in some way was opposed to ignoring it.
-                ex.printStackTrace();
+            public void onException(Exception ex) 
+            { //Should really log and deal with this in some way was opposed to ignoring it.
+            	MainManager.logMessage("#TwitterManager: Threw exception: " + ex.toString());
+                //ex.printStackTrace();
             }
         };
 		
         
         twitterStream.addListener(listener); //Sets up the callbacks
         twitterStream.filter(query); //Starts the stream with the required query.
+        
+        MainManager.logMessage("#TwitterManager: Stream started");
         
         while(!shutdown) //Waits until shutdown
         try
@@ -125,6 +141,7 @@ public class TwitterManager implements Runnable
         }
         catch(InterruptedException e){}
         
+        MainManager.logMessage("#TwitterManager: Shutting down stream");
         twitterStream.shutdown(); //Shuts down the stream nicely.
 	}
 }
