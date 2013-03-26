@@ -15,7 +15,7 @@ public class Analysis {
 	public static final int UKPOP = 62641000;
 	public static final int UKTWIT = 10000000;
 	
-	public void Initiate() 
+	public void initiate() 
 	{
 		
 		Grid = new Cell[1600];
@@ -48,6 +48,8 @@ public class Analysis {
 		catch (IOException e) 
 		{
 			
+			MainManager.logMessage("#Analysis: Could not read Server/res/BoroughDensities.txt");
+			
 			e.printStackTrace();
 		
 		}
@@ -68,8 +70,8 @@ public class Analysis {
 				
 				int a = Integer.valueOf(tokens[i]);
 				
-				Grid[i].SetBor(a);
-				Grid[i].SetPop(PopDen[a]);
+				Grid[i].setBor(a);
+				Grid[i].setPop(PopDen[a]);
 					
 			}
  
@@ -77,15 +79,17 @@ public class Analysis {
 		catch (IOException e) 
 		{
 			
+			MainManager.logMessage("#Analysis: Could not read Server/res/BoroughPlace.txt");
+			
 			e.printStackTrace();
 		
 		} 
 		
 	}
 	
-	//Convertes from Long and latitude to cell position.
+	//Converts from Long and latitude to cell position.
 	
-	public int CordConv(double x, double y) 
+	public int cordConv(double x, double y) 
 	{
 		
 		x = (x + 0.5)/0.02;
@@ -108,15 +112,15 @@ public class Analysis {
 	
 	//Function will be called, to add a tweet.
 	
-	public void AddTweet(double x, double y)
+	public void addTweet(double x, double y)
 	{
 		
-		int Pos = CordConv(x, y);
+		int Pos = cordConv(x, y);
 		
 		if (Pos > -1)
 		{
 			
-			Grid[Pos].AddIll((int)(UKPOP/UKTWIT));
+			Grid[Pos].addIll((int)(UKPOP/UKTWIT));
 
 		}
 		
@@ -124,11 +128,11 @@ public class Analysis {
 	
 	//Function will be called with train travel data.
 	
-	public void Move(double xIn, double yIn, double xOut, double yOut, double Num)
+	public void move(double xIn, double yIn, double xOut, double yOut, double Num)
 	{
 	
-		int InPos = CordConv(xIn, yIn);
-		int OutPos = CordConv(xOut, yOut);
+		int InPos = cordConv(xIn, yIn);
+		int OutPos = cordConv(xOut, yOut);
 		int IllMove = 0;
 		
 		if (InPos > -1)
@@ -137,38 +141,38 @@ public class Analysis {
 			for(int i = -1; i < 2; i++)
 			{
 				
-				int a = CordConv(xIn + 0.02, yIn + (i*0.01));
+				int a = cordConv(xIn + 0.02, yIn + (i*0.01));
 				
 				if(a > -1)
 				{
 					
-					Grid[a].AddPop((int)-Num/9);
-					int ToAdd = Grid[a].GetIll()/18;
-					Grid[a].AddIll(-ToAdd);
+					Grid[a].addPop((int)-Num/9);
+					int ToAdd = Grid[a].getIll()/18;
+					Grid[a].addIll(-ToAdd);
 					IllMove += ToAdd;
 					
 				}
 				
-				int b = CordConv(xIn, yIn + (i*0.01));
+				int b = cordConv(xIn, yIn + (i*0.01));
 				
 				if(b > -1)
 				{
 					
-					Grid[b].AddPop((int)-Num/9);
-					int ToAdd = Grid[b].GetIll()/18;
-					Grid[b].AddIll(-ToAdd);
+					Grid[b].addPop((int)-Num/9);
+					int ToAdd = Grid[b].getIll()/18;
+					Grid[b].addIll(-ToAdd);
 					IllMove += ToAdd;
 					
 				}
 				
-				int c = CordConv(xIn - 0.02, yIn + (i*0.01));
+				int c = cordConv(xIn - 0.02, yIn + (i*0.01));
 				
 				if(c > -1)
 				{
 					
-					Grid[c].AddPop((int)-Num/9);
-					int ToAdd = Grid[c].GetIll()/18;
-					Grid[c].AddIll(-ToAdd);
+					Grid[c].addPop((int)-Num/9);
+					int ToAdd = Grid[c].getIll()/18;
+					Grid[c].addIll(-ToAdd);
 					IllMove += ToAdd;
 					
 				}
@@ -183,33 +187,33 @@ public class Analysis {
 			for(int i = -1; i < 2; i++)
 			{
 				
-				int a = CordConv(xOut + 0.02, yOut + (i*0.01));
+				int a = cordConv(xOut + 0.02, yOut + (i*0.01));
 				
 				if(a > -1)
 				{
 					
-					Grid[a].AddPop((int)Num/9);
-					Grid[a].AddIll((int)IllMove/9);
+					Grid[a].addPop((int)Num/9);
+					Grid[a].addIll((int)IllMove/9);
 					
 				}
 				
-				int b = CordConv(xOut, yOut + (i*0.01));
+				int b = cordConv(xOut, yOut + (i*0.01));
 				
 				if(b > -1)
 				{
 					
-					Grid[b].AddPop((int)Num/9);
-					Grid[b].AddIll((int)IllMove/9);
+					Grid[b].addPop((int)Num/9);
+					Grid[b].addIll((int)IllMove/9);
 					
 				}
 				
-				int c = CordConv(xOut - 0.02, yOut + (i*0.01));
+				int c = cordConv(xOut - 0.02, yOut + (i*0.01));
 				
 				if(c > -1)
 				{
 					
-					Grid[c].AddPop((int)Num/9);
-					Grid[c].AddIll((int)IllMove/9);
+					Grid[c].addPop((int)Num/9);
+					Grid[c].addIll((int)IllMove/9);
 					
 				}
 				

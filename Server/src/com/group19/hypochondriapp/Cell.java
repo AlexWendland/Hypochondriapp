@@ -18,28 +18,28 @@ public class Cell {
 		
 	}
 	
-	public void SetBor(int bor)
+	public void setBor(int bor)
 	{
 		
 		Bor = bor;
 		
 	}
 	
-	public void SetPop(int pop)
+	public void setPop(int pop)
 	{
 		
 		Pop = pop;
 		
 	}
 	
-	public void SetIll(int ill)
+	public void setIll(int ill)
 	{
 	
 		Ill = ill;
 		
 	}
 	
-	public void AddPop(int pop)
+	public void addPop(int pop)
 	{
 		
 		Pop += pop;
@@ -49,7 +49,7 @@ public class Cell {
 		
 	}
 	
-	public void AddIll(int ill)
+	public void addIll(int ill)
 	{
 		
 		Ill += ill;
@@ -59,21 +59,21 @@ public class Cell {
 		
 	}
 	
-	public int GetIll()
+	public int getIll()
 	{
 		
 		return Ill;
 		
 	}
 	
-	public int GetPop()
+	public int getPop()
 	{
 		
 		return Pop;
 		
 	}
 	
-	public int GetBor()
+	public int getBor()
 	{
 		
 		return Bor;

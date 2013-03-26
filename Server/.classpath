@@ -2,11 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="lib" path="C:/Users/Jack/Hypochondiapp/twitter4j/twitter4j-async-3.0.3.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Jack/Hypochondiapp/twitter4j/twitter4j-core-3.0.3.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Jack/Hypochondiapp/twitter4j/twitter4j-examples-3.0.3.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Jack/Hypochondiapp/twitter4j/twitter4j-media-support-3.0.3.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Jack/Hypochondiapp/twitter4j/twitter4j-stream-3.0.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="D:/Users/Alexander Wendland/My program files/eclipse/Twitter4J/twitter4j-async-3.0.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="D:/Users/Alexander Wendland/My program files/eclipse/Twitter4J/twitter4j-core-3.0.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="D:/Users/Alexander Wendland/My program files/eclipse/Twitter4J/twitter4j-examples-3.0.3.jar"/>

@@ -1,19 +1,22 @@
 package com.group19.hypochondriapp;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 
 public class BorWriter {
 	
-	private int[] Bor;
+	public int[] Bor;
 	
 	public BorWriter()
 	{
 		
 	}
 	
-	public void FilSqu(int Star, int Hig, int Len, int Val)
+	public void filSqu(int Star, int Hig, int Len, int Val)
 	{
 		
 		int Num = Star;
@@ -38,8 +41,12 @@ public class BorWriter {
 	
 	//Hard coding Boroughs.
 	
-	public void SetBor()
+	public void setBor()
 	{
+		
+		//Manual Method.
+		
+		/*
 		
 		Bor = new int[1600];
 		
@@ -199,19 +206,90 @@ public class BorWriter {
 		
 		FilSqu((21*40 + 16), 3, 2, 33);
 		
+		*/
+		
+		//Twitter method.
+		
+		Bor = new int[1600];
+		
+		String[] BoroughNames = new String[33];
+		
+		BufferedReader br = null;
+		
+		try 
+		{
+ 
+			String Temp;
+			
+			br = new BufferedReader(new FileReader("BoroughKey.txt"));
+ 
+			Temp = br.readLine();
+				
+			BoroughNames = Temp.split(", ");
+ 
+		} 
+		catch (IOException e) 
+		{
+			
+			//MainManager.logMessage("#BorWriter: Could not read Server/res/BoroughKey.txt");
+			
+			e.printStackTrace();
+		
+		}
+		
+		for(int i = 0; i < 40; i++)
+		{
+			
+			for(int j = 0; j < 40; j++)
+				
+			{
+				
+				String[] Boroughs = MainManager.getTwitterManager().getLocation(51.305 + i*0.01, -0.49 + j*0.02);
+				
+				try
+				{
+					synchronized(this)
+					{
+						this.wait(10000);
+					}
+				}
+				catch(Exception e){}
+				
+				Boroughs = Boroughs[0].split(", London");
+				
+				for(int k = 0; k < 33; k++)
+				{
+				
+					if(Boroughs[0] == BoroughNames[k])
+					{
+					
+						Bor[i + j*40] = k;
+						break;
+					
+					}
+					else
+					{
+						
+						Bor[i + j*40] = 0;
+						
+					}
+				
+				}
+				
+			}
+			
+		}
+		
 	}
 	
-	//Only reason main exists is to write to file.
+	public void run()
+	{
 	
-	public static void main(String[] args) {
-			
 		String content = new String();
 		
 		BorWriter bor = new BorWriter();
 		
-		bor.SetBor();
-		
-		System.out.println("Start!");
+		bor.setBor();
 		
 		for(int i = 0; i < 1600; i++)
 		{
@@ -222,8 +300,10 @@ public class BorWriter {
 				System.out.println((i%40) + " " + (int)(i/40));
 				
 			}
-
+	
 			content += bor.Bor[i] + " ";
+			
+			
 			
 		}
 			
@@ -241,12 +321,12 @@ public class BorWriter {
 			bw.write(content);
 			bw.close();
 	 
-			System.out.println("Done!");
+			MainManager.logMessage("#BorWriter: Done");
 	 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+	
 	}
 	
 }
