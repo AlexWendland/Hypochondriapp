@@ -11,8 +11,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 //Class that handles and maintains references (and threads) to all modules of the system.
 public class MainManager 
 {
+	private static boolean shutdown = false;
+	
 	//List of all modules.
 	private static TwitterManager twitterManager;
+	//private static GoogleManager googleManager;
 	
 	
 	
@@ -26,6 +29,7 @@ public class MainManager
 		timeFormat = new SimpleDateFormat("dd/MM/yy HH:mm:ss.SSS - ");
 		
 		twitterManager = new TwitterManager();
+		//googleManager = new GoogleManager();
 	}
 	
 	public static void cleanup()
@@ -72,22 +76,31 @@ public class MainManager
 		init();
 		
 		//Should be a thread pool
+		
 		Thread twitter = new Thread(twitterManager);
 		twitter.start();
 		
 		//Tests for the twitter miner.
 		System.in.read();
+		shutdown = true;
+		twitter.interrupt();
 		
-		twitterManager.shutdown();
 		try 
 		{
 			twitter.join();
 		} 
 		catch (InterruptedException e) {}
 		
+		
+		
+		/*
+		googleManager.authenticate();
+		*/
 		cleanup();
 	}
 	
 	public static TwitterManager getTwitterManager() { return twitterManager; }
+	
+	public static boolean isShutdown() { return shutdown; }
 
 }
