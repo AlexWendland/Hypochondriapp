@@ -1,6 +1,5 @@
 package com.group19.hypochondriapp;
 
-import java.io.IOException;
 import java.io.FileReader;
 import java.io.BufferedReader;
 
@@ -31,7 +30,7 @@ public class Analysis {
  
 			String BoroughPos;
  
-			br = new BufferedReader(new FileReader("BoroughDensities.txt"));
+			br = new BufferedReader(new FileReader("./res/BoroughDensities.txt"));
  
 			BoroughPos = br.readLine();
 				
@@ -45,12 +44,10 @@ public class Analysis {
 			}
  
 		} 
-		catch (IOException e) 
+		catch (Exception e) 
 		{
 			
-			MainManager.logMessage("#Analysis: Could not read Server/res/BoroughDensities.txt");
-			
-			e.printStackTrace();
+			MainManager.logMessage("#Analysis: Could not read ./res/BoroughDensities.txt.");
 		
 		}
 		
@@ -59,7 +56,7 @@ public class Analysis {
  
 			String BoroughPos;
  
-			br = new BufferedReader(new FileReader("BoroughPlace.txt"));
+			br = new BufferedReader(new FileReader("./res/BoroughPlace.txt"));
  
 			BoroughPos = br.readLine();
 				
@@ -76,12 +73,10 @@ public class Analysis {
 			}
  
 		} 
-		catch (IOException e) 
+		catch (Exception e) 
 		{
 			
-			MainManager.logMessage("#Analysis: Could not read Server/res/BoroughPlace.txt");
-			
-			e.printStackTrace();
+			MainManager.logMessage("#Analysis: Could not read ./res/BoroughPlace.txt.");
 		
 		} 
 		

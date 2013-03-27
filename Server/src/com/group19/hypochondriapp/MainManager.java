@@ -14,8 +14,6 @@ public class MainManager
 	//List of all modules.
 	private static TwitterManager twitterManager;
 	
-	
-	
 	//Objects for storing logged messages.
 	private static ConcurrentLinkedQueue<String> log;
 	private static SimpleDateFormat timeFormat;

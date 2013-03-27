@@ -221,19 +221,17 @@ public class BorWriter {
  
 			String Temp;
 			
-			br = new BufferedReader(new FileReader("BoroughKey.txt"));
+			br = new BufferedReader(new FileReader("./res/BoroughKey.txt"));
  
 			Temp = br.readLine();
 				
 			BoroughNames = Temp.split(", ");
  
 		} 
-		catch (IOException e) 
+		catch (Exception e) 
 		{
 			
-			//MainManager.logMessage("#BorWriter: Could not read Server/res/BoroughKey.txt");
-			
-			e.printStackTrace();
+			MainManager.logMessage("#BorWriter: Could not read ./res/BoroughKey.txt.");
 		
 		}
 		
@@ -282,9 +280,11 @@ public class BorWriter {
 		
 	}
 	
-	public void run()
+	public static void run()
 	{
 	
+		MainManager.logMessage("#BorWriter: Attempting to allocate Boroughs.");
+		
 		String content = new String();
 		
 		BorWriter bor = new BorWriter();
@@ -310,7 +310,7 @@ public class BorWriter {
 		try {
 				 
 	 
-			File file = new File("res/BoroughPlace.txt");
+			File file = new File("./res/BoroughPlace.txt");
 				
 			if (!file.exists()) {
 				file.createNewFile();
@@ -321,10 +321,10 @@ public class BorWriter {
 			bw.write(content);
 			bw.close();
 	 
-			MainManager.logMessage("#BorWriter: Done");
+			MainManager.logMessage("#BorWriter: Done.");
 	 
 		} catch (Exception e) {
-			e.printStackTrace();
+			MainManager.logMessage("#BorWriter: Failed to write ./res/BoroughPlace.txt.");
 		}
 	
 	}
