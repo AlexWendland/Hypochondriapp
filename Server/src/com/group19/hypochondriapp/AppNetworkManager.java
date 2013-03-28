@@ -13,7 +13,25 @@ public class AppNetworkManager implements Runnable
 	
 	ServerSocket socket;
 	
-	Object currentDataModel;
+	Object currentDataModel = new String("Test Data\n" +
+											"########################################\n" + 
+											"########################################\n" + 
+											"########################################\n" + 
+											"########################################\n" + 
+											"########################################\n" + 
+											"########################################\n" + 
+											"########################################\n" + 
+											"########################################\n" + 
+											"########################################\n" + 
+											"########################################\n" + 
+											"########################################\n" + 
+											"########################################\n" + 
+											"########################################\n" + 
+											"########################################\n" + 
+											"########################################\n" + 
+											"########################################\n" + 
+											"########################################\n" );
+											
 	
 	public AppNetworkManager()
 	{
@@ -32,9 +50,6 @@ public class AppNetworkManager implements Runnable
 		{
 			socket = new ServerSocket(PORT);
 			socket.setSoTimeout(100);
-			System.out.println(socket.toString());
-			System.out.println(socket.isBound());
-			System.out.println(socket.getInetAddress());
 		}
 		catch(IOException e)
 		{
@@ -114,6 +129,7 @@ public class AppNetworkManager implements Runnable
 					toApp.flush();
 					toApp.writeObject(currentDataModel);
 					toApp.flush();
+					MainManager.logMessage("#AppNetworkManager: App request serviced");
 				}
 				catch(IOException e)
 				{

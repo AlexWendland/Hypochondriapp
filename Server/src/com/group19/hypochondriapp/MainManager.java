@@ -77,7 +77,6 @@ public class MainManager
 	{
 		init();
 		
-		//Should be a thread pool
 		
 		/*
 		Thread twitter = new Thread(twitterManager);
