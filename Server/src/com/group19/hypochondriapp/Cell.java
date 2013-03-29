@@ -7,7 +7,7 @@ public class Cell {
 	
 	private int Bor;
 	private int Pop;
-	private int Ill;
+	private double Ill;
 	
 	public Cell()
 	{
@@ -18,26 +18,17 @@ public class Cell {
 		
 	}
 	
-	public void setBor(int bor)
-	{
-		
-		Bor = bor;
-		
-	}
+	public void setBor(int bor)	{ Bor = bor;	}
 	
-	public void setPop(int pop)
-	{
-		
-		Pop = pop;
-		
-	}
+	public void setPop(int pop)	{ Pop = pop;	}
 	
-	public void setIll(int ill)
-	{
+	public void setIll(double ill)	{ Ill = ill;}
 	
-		Ill = ill;
-		
-	}
+	public double getIll()	{ return Ill;	}
+	
+	public int getPop()	{ return Pop;	}
+	
+	public int getBor()	{ return Bor;	}
 	
 	public void addPop(int pop)
 	{
@@ -49,7 +40,7 @@ public class Cell {
 		
 	}
 	
-	public void addIll(int ill)
+	public void addIll(double ill)
 	{
 		
 		Ill += ill;
@@ -58,27 +49,5 @@ public class Cell {
 			Ill = 0;
 		
 	}
-	
-	public int getIll()
-	{
-		
-		return Ill;
-		
-	}
-	
-	public int getPop()
-	{
-		
-		return Pop;
-		
-	}
-	
-	public int getBor()
-	{
-		
-		return Bor;
-		
-	}
-	
 	
 }
