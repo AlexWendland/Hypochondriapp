@@ -17,6 +17,7 @@ public class MainManager
 	private static TwitterManager twitterManager;
 	private static GoogleManager googleManager;
 	private static AppNetworkManager appNetworkManager;
+	private static DataManager dataManager;
 	
 	//Objects for storing logged messages.
 	private static ConcurrentLinkedQueue<String> log;
@@ -103,6 +104,7 @@ public class MainManager
 	public static TwitterManager getTwitterManager() { return twitterManager; }
 	public static GoogleManager getGoogleManager() { return googleManager; }
 	public static AppNetworkManager getAppNetworkManager() { return appNetworkManager; }
+	public static DataManager getDataManager() {return dataManager; };
 	
 	public static boolean isShutdown() { return shutdown; }
 

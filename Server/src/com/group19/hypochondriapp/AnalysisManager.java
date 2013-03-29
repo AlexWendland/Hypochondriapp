@@ -6,64 +6,29 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
-public class AnalysisManager {
+public class AnalysisManager implements Runnable {
 
 	private Cell[] Grid;
 	
-	public static final int TWITSCALAR = 15;
+	public static final int TWITSCALAR = 30;
 	
 	public void init() 
 	{
 		
 		Grid = new Cell[1600];
-		int[] PopDen = new int[33];
-		BufferedReader br = null;
-		
-		//Takes in Densities, in sets it to the array, then sets borough and pop to cells.
-		
-		try 
-		{
- 
-			String BoroughPos;
-			br = new BufferedReader(new FileReader("./res/BoroughDensities.txt"));
-			BoroughPos = br.readLine();
-			String[] tokens = BoroughPos.split(" ");
-			
-			for(int i = 0; i < 33; i++)	{ PopDen[i] = 259*Integer.valueOf(tokens[i]);	}
- 
-		} 
-		catch (Exception e) 
-		{
-			
-			MainManager.logMessage("#AnalysisManager: Could not read ./res/BoroughDensities.txt.");
-			
-		}
-		
-		try 
-		{
- 
-			String BoroughPos;
-			br = new BufferedReader(new FileReader("./res/BoroughPlace.txt"));
-			BoroughPos = br.readLine();
-			String[] tokens = BoroughPos.split(" ");
+		int[] PopDen = MainManager.getDataManager().getBoroughDensities();
+		int[] BoroughPlaces = MainManager.getDataManager().getBoroughPlaces();
 				
-			for(int i = 0; i < 1600; i++)
-			{
-				
-				int a = Integer.valueOf(tokens[i]);
-				Grid[i].setBor(a);
-				Grid[i].setPop(PopDen[a]);
+		for(int i = 0; i < 1600; i++)
+		{
+	
+			Grid[i].setBor(BoroughPlaces[i]);
+			Grid[i].setPop(PopDen[BoroughPlaces[i]]);
 					
-			}
- 
-		} 
-		catch (Exception e) 
-		{
-			
-			MainManager.logMessage("#AnalysisManager: Could not read ./res/BoroughPlace.txt.");
-		
-		} 
+		}
 		
 	}
 	
@@ -89,6 +54,23 @@ public class AnalysisManager {
 		return(pos);
 		
 	}
+	
+	public double getAverageIll()
+	{
+		
+		double average = 0;
+		double Fails = 0;
+		
+		for(int i = 0; i < 1600; i++)	
+		{ 
+			try{ average += Grid[i].getIll()/Grid[i].getPop();	}
+			catch (Exception e) 	{ Fails++;	}
+		}
+		try { return average/(1600 - Fails);	}
+		catch (Exception e)	{ return 0;	}
+		
+	}
+	
 	
 	public void filSqu(int Star, int Hig, int Len, int Val, int[] Bor)
 	{
@@ -281,25 +263,9 @@ public class AnalysisManager {
 		
 		//Twitter method.
 		
-		String[] BoroughNames = new String[33];
+		String[] BoroughNames = MainManager.getDataManager().getBoroughNames();
 		
-		BufferedReader br = null;
-		
-		try 
-		{
- 
-			String Temp;
-			br = new BufferedReader(new FileReader("./res/BoroughKey.txt"));
-			Temp = br.readLine();
-			BoroughNames = Temp.split(", ");
- 
-		} 
-		catch (Exception e) 
-		{
-			
-			MainManager.logMessage("#AnalysisManager: Could not read ./res/BoroughKey.txt.");
-		
-		}
+		for(int i = 0; i < 33; i++)	{ BoroughNames[i] = BoroughNames[i].toUpperCase();	}
 		
 		for(int i = 0; i < 40; i++)
 		{
@@ -371,7 +337,7 @@ public class AnalysisManager {
 			bw.write(content);
 			bw.close();
 	 
-			MainManager.logMessage("#AnalysisManager: Done.");
+			MainManager.logMessage("#AnalysisManager: Successfully allocated Boroughs.");
 	 
 		} catch (Exception e) {
 			MainManager.logMessage("#AnalysisManager: Failed to write ./res/BoroughPlace.txt.");
@@ -406,9 +372,11 @@ public class AnalysisManager {
 	
 	//Function will be called, to add a tweet.
 	
-	public void addTweet(String Place, String[] PlaceNames)
+	public void addTweet(String Place)
 	{
-	
+		
+		String[] PlaceNames = MainManager.getDataManager().getBoroughNames();
+		
 		try
 		{
 			
@@ -529,92 +497,45 @@ public class AnalysisManager {
 	
 	//Function will be called with train travel data.
 	
-	public void move(double xIn, double yIn, double xOut, double yOut, double Num)
+	public void movePeople(double X, double Y, double Num)
 	{
 	
-		int InPos = cordConv(xIn, yIn);
-		int OutPos = cordConv(xOut, yOut);
-		int IllMove = 0;
+		int Pos = cordConv(X, Y);
+		double IllMove = Num*getAverageIll()/9;
 		
-		if (InPos > -1)
+		if (Pos > -1)
 		{
 			
 			for(int i = -1; i < 2; i++)
 			{
 				
-				int a = cordConv(xIn + 0.02, yIn + (i*0.01));
-				
-				if(a > -1)
-				{
-					
-					Grid[a].addPop((int)-Num/9);
-					double ToAdd = Grid[a].getIll()/18;
-					Grid[a].addIll(-ToAdd);
-					IllMove += ToAdd;
-					
-				}
-				
-				int b = cordConv(xIn, yIn + (i*0.01));
-				
-				if(b > -1)
-				{
-					
-					Grid[b].addPop((int)-Num/9);
-					double ToAdd = Grid[b].getIll()/18;
-					Grid[b].addIll(-ToAdd);
-					IllMove += ToAdd;
-					
-				}
-				
-				int c = cordConv(xIn - 0.02, yIn + (i*0.01));
-				
-				if(c > -1)
-				{
-					
-					Grid[c].addPop((int)-Num/9);
-					double ToAdd = Grid[c].getIll()/18;
-					Grid[c].addIll(-ToAdd);
-					IllMove += ToAdd;
-					
-				}
-				
-			}
-			
-		}
-		
-		if(OutPos > -1)
-		{
-			
-			for(int i = -1; i < 2; i++)
-			{
-				
-				int a = cordConv(xOut + 0.02, yOut + (i*0.01));
+				int a = cordConv(X + 0.02, Y + (i*0.01));
 				
 				if(a > -1)
 				{
 					
 					Grid[a].addPop((int)Num/9);
-					Grid[a].addIll(IllMove/9);
+					Grid[a].addIll(IllMove);
 					
 				}
 				
-				int b = cordConv(xOut, yOut + (i*0.01));
+				int b = cordConv(X, Y + (i*0.01));
 				
 				if(b > -1)
 				{
 					
-					Grid[b].addPop((int)Num/9);
-					Grid[b].addIll(IllMove/9);
+					Grid[a].addPop((int)Num/9);
+					Grid[a].addIll(IllMove);
 					
 				}
 				
-				int c = cordConv(xOut - 0.02, yOut + (i*0.01));
+				int c = cordConv(X - 0.02, Y + (i*0.01));
 				
 				if(c > -1)
 				{
 					
-					Grid[c].addPop((int)Num/9);
-					Grid[c].addIll(IllMove/9);
+					Grid[a].addPop((int)Num/9);
+					Grid[a].addIll(IllMove);
 					
 				}
 				
@@ -626,37 +547,26 @@ public class AnalysisManager {
 	
 	public void run()
 	{
-	
-		String[] BoroughNames = new String[33];
-		BufferedReader br = null;
 		
-		try 
-		{
- 
-			String Temp;
-			br = new BufferedReader(new FileReader("./res/BoroughKey.txt"));
-			Temp = br.readLine();
-			BoroughNames = Temp.split(", ");
-			
-			for(int i = 0; i < 33; i++)	{ BoroughNames[i] = BoroughNames[i].toUpperCase();	}
- 
-		} 
-		catch (Exception e) 
+		while(!MainManager.isShutdown())
 		{
 			
-			MainManager.logMessage("#AnalysisManager: Could not read ./res/BoroughKey.txt.");
-		
-		}
-		
-		ArrayList<String> Tweets = MainManager.getTwitterManager().getTweets();
-		
-		for(int i = 0; i < Tweets.size(); i++)
-		{
-			
-			addTweet(Tweets.get(i),BoroughNames);
+			if(MainManager.getTwitterManager().isUpdated())
+			{
+				
+				init();
+				
+				ArrayList<String> Tweets = MainManager.getTwitterManager().getTweets();
+				for(int i = 0; i < Tweets.size(); i++)	{ addTweet(Tweets.get(i));	}
+				
+				Date CurrentData = Calendar.getInstance().getTime();
+				
+				
+				
+			}
 			
 		}
 		
 	}
-	
+
 }

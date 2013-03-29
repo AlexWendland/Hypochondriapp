@@ -4,7 +4,6 @@ package com.group19.hypochondriapp;
 
 public class Cell {
 
-	
 	private int Bor;
 	private int Pop;
 	private double Ill;
