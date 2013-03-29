@@ -15,7 +15,8 @@ public class MainManager
 	
 	//List of all modules.
 	private static TwitterManager twitterManager;
-	//private static GoogleManager googleManager;
+	private static GoogleManager googleManager;
+	private static AppNetworkManager appNetworkManager;
 	
 	//Objects for storing logged messages.
 	private static ConcurrentLinkedQueue<String> log;
@@ -27,7 +28,8 @@ public class MainManager
 		timeFormat = new SimpleDateFormat("dd/MM/yy HH:mm:ss.SSS - ");
 		
 		twitterManager = new TwitterManager();
-		//googleManager = new GoogleManager();
+		googleManager = new GoogleManager();
+		appNetworkManager = new AppNetworkManager();
 	}
 	
 	public static void cleanup()
@@ -73,8 +75,8 @@ public class MainManager
 	{
 		init();
 		
-		//Should be a thread pool
 		
+		/*
 		Thread twitter = new Thread(twitterManager);
 		twitter.start();
 		
@@ -89,15 +91,18 @@ public class MainManager
 		} 
 		catch (InterruptedException e) {}
 		
-		
-		
-		/*
-		googleManager.authenticate();
 		*/
+		
+		appNetworkManager.run();
+		
+		//googleManager.updateCSV();
+		
 		cleanup();
 	}
 	
 	public static TwitterManager getTwitterManager() { return twitterManager; }
+	public static GoogleManager getGoogleManager() { return googleManager; }
+	public static AppNetworkManager getAppNetworkManager() { return appNetworkManager; }
 	
 	public static boolean isShutdown() { return shutdown; }
 

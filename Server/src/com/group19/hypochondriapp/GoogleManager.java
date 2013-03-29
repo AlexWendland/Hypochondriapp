@@ -14,15 +14,16 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class GoogleManager implements Runnable
 {
-	public static final long UPDATE = 2419200000l;
-	public static final String SERVICE = "trendspro";
-	public static final String ACCOUNT_TYPE = "HOSTED_OR_GOOGLE";
-	public static final String LOGIN_URL = "https://www.google.com/accounts/ClientLogin";
-	public static final String SOURCE = "86.17.74.14";
-	public static final String CONTENT_TYPE = "x-www-form-urlencoded";
-	public static final String CHARSET = "UTF-8";
-	public static final int DEFAULT_READ_TIMEOUT = 5000;
-	public static final int DEFAULT_CONNECT_TIMEOUT = 5000;
+	private static final long UPDATE = 2419200000l;
+	private static final String SERVICE = "trendspro";
+	private static final String ACCOUNT_TYPE = "HOSTED_OR_GOOGLE";
+	private static final String LOGIN_URL = "https://www.google.com/accounts/ClientLogin";
+	private static final String CSV_URL = "http://www.google.com/trends/trendsReport?hl=en-US&q=flu&geo=GB&content=1&export=1";
+	private static final String SOURCE = "86.17.74.14";
+	private static final String CONTENT_TYPE = "x-www-form-urlencoded";
+	private static final String CHARSET = "UTF-8";
+	private static final int DEFAULT_READ_TIMEOUT = 5000;
+	private static final int DEFAULT_CONNECT_TIMEOUT = 5000;
 	
 	private Properties googleProperties;
 	private String authToken;
@@ -69,11 +70,10 @@ public class GoogleManager implements Runnable
 		
 	}
 	
-	public void authenticate()
+	private boolean authenticate()
 	{
 		String query = new String("accountType=" + ACCOUNT_TYPE + "&Email=" + googleProperties.getProperty("g.username")
-						+ "&Passwd=" + googleProperties.getProperty("g.password") + "&service=" + SERVICE
-						+ "&source=" + SOURCE);
+						+ "&Passwd=" + googleProperties.getProperty("g.password") + "&service=" + SERVICE);
 		
 		URLConnection connection = null;
 		
@@ -100,6 +100,7 @@ public class GoogleManager implements Runnable
 		{
 			MainManager.logMessage("#GoogleManager: Unable to login");
 			e.printStackTrace();
+			return false;
 		}
 		
 		String responseMessage = null;
@@ -122,30 +123,74 @@ public class GoogleManager implements Runnable
 		{
 			MainManager.logMessage("#GoogleManager: Unable to retrieve login response");
 			e.printStackTrace();
+			return false;
 		}
 		
-		String[] lines = responseMessage.split(System.getProperty("line.separator"));
-		for (String line : lines) 
-		{
-			if (line.startsWith("Auth=")) 
-			{
-				authToken = line.substring(5);
-			}
-		}
+		if(!responseMessage.contains("Auth=")) return false;
+		
+		int index = responseMessage.lastIndexOf("Auth=");
+		authToken = responseMessage.substring(index+5);
 		
 		MainManager.logMessage("#GoogleManager: Got authorisation token from Google: " + authToken);
+		
+		return true;
 	}
 	
 	public void updateCSV()
 	{
 		//Needs to replace existing csv and update properties to new last updated time
+		boolean authSucceed = authenticate();
+		
+		if(!authSucceed)
+		{
+			MainManager.logMessage("#GoogleManager: Authentication failed, unable to update insights");
+			return;
+		}
+		else
+		{
+			URLConnection connection = null;
+			
+			try
+			{
+				connection = new URL(CSV_URL).openConnection();
+				connection.setReadTimeout(DEFAULT_READ_TIMEOUT);
+				connection.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT);
+				connection.setDoInput(false);
+				connection.setDoOutput(true); // Triggers POST.
+				connection.setRequestProperty("Authorization:", authToken);
+				//connection.setRequestProperty("Accept-Charset", CHARSET);
+				//connection.setRequestProperty("Content-Type", "application/" + CONTENT_TYPE);
+				//connection.setRequestProperty("Auth", authToken);
+				
+				String responseMessage = null;
+				
+				StringBuffer sb = new StringBuffer();
+				InputStream dis = ((HttpURLConnection)connection).getInputStream();
+				int chr;
+				while ((chr = dis.read()) != -1) 
+				{
+					sb.append((char) chr);
+				}
+				if (sb != null) 
+				{
+					responseMessage = sb.toString();
+				}
+				
+				System.out.println(responseMessage);
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+				System.exit(-1);
+			}
+		}
+		
 	}
 	
 	@Override
 	public void run() 
 	{
 		if(updateRequired) updateCSV();
-		
 	}
 
 }
