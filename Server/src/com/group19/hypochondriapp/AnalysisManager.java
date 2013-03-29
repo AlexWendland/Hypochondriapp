@@ -1,13 +1,10 @@
 package com.group19.hypochondriapp;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 
 public class AnalysisManager implements Runnable {
 
@@ -541,10 +538,16 @@ public class AnalysisManager implements Runnable {
 				
 			}
 			
+		} else
+		{
+			
+			MainManager.logMessage("#AnalysisManager: Train station not in map.");
+
 		}
 		
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void run()
 	{
 		
@@ -559,9 +562,73 @@ public class AnalysisManager implements Runnable {
 				ArrayList<String> Tweets = MainManager.getTwitterManager().getTweets();
 				for(int i = 0; i < Tweets.size(); i++)	{ addTweet(Tweets.get(i));	}
 				
-				Date CurrentData = Calendar.getInstance().getTime();
+				int Day = Calendar.getInstance().getTime().getDay();
+				int MinRep = (int)(Calendar.getInstance().getTime().getMinutes()/15);
+				int HourRep = Calendar.getInstance().getTime().getHours() - 2;
+				int[] TrainStations = MainManager.getDataManager().getTrainStations();
 				
 				
+				if(((Day == 0) && (HourRep >= 0)) || ((Day == 1) && (HourRep < 0)))
+				{
+					
+					int[][] TravelDataOut = MainManager.getDataManager().getSunTravelOutData();
+					int[][] TravelDataIn = MainManager.getDataManager().getSunTravelInData();
+					double Average = getAverageIll();
+					
+					for (int i = 0; i < 268; i++) 
+					{
+						
+						for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
+						{
+							
+							movePeople(TrainStations[i*2], TrainStations[i*2+1], TravelDataIn[i][j]);
+							movePeople(TrainStations[i*2], TrainStations[i*2+1], -TravelDataOut[i][j]);
+							
+						}
+						
+					}
+					
+				}else if(((Day == 7) && (HourRep >= 0)) || ((Day == 0) && (HourRep < 0)))
+				{
+					
+					int[][] TravelDataOut = MainManager.getDataManager().getSatTravelOutData();
+					int[][] TravelDataIn = MainManager.getDataManager().getSatTravelInData();
+					double Average = getAverageIll();
+					
+					for (int i = 0; i < 268; i++) 
+					{
+						
+						for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
+						{
+							
+							movePeople(TrainStations[i*2], TrainStations[i*2+1], TravelDataIn[i][j]);
+							movePeople(TrainStations[i*2], TrainStations[i*2+1], -TravelDataOut[i][j]);
+							
+						}
+						
+					}
+					
+				} else
+				{
+					
+					int[][] TravelDataOut = MainManager.getDataManager().getWeekTravelOutData();
+					int[][] TravelDataIn = MainManager.getDataManager().getWeekTravelInData();
+					double Average = getAverageIll();
+					
+					for (int i = 0; i < 268; i++) 
+					{
+						
+						for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
+						{
+							
+							movePeople(TrainStations[i*2], TrainStations[i*2+1], TravelDataIn[i][j]);
+							movePeople(TrainStations[i*2], TrainStations[i*2+1], -TravelDataOut[i][j]);
+							
+						}
+						
+					}
+					
+				}
 				
 			}
 			

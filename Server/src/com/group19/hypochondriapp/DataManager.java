@@ -19,6 +19,7 @@ public class DataManager{
 			String Temp;
 			br = new BufferedReader(new FileReader("./res/BoroughKey.txt"));
 			Temp = br.readLine();
+			br.close();
 			BoroughNames = Temp.split(", ");
  
 		} 
@@ -47,6 +48,7 @@ public class DataManager{
 			String BoroughPos;
 			br = new BufferedReader(new FileReader("./res/BoroughDensities.txt"));
 			BoroughPos = br.readLine();
+			br.close();
 			String[] tokens = BoroughPos.split(" ");
 			
 			for(int i = 0; i < 33; i++)	{ PopDen[i] = 259*Integer.valueOf(tokens[i]);	}
@@ -75,6 +77,7 @@ public class DataManager{
 			String BoroughPos;
 			br = new BufferedReader(new FileReader("./res/BoroughPlace.txt"));
 			BoroughPos = br.readLine();
+			br.close();
 			String[] tokens = BoroughPos.split(" ");
 				
 			for(int i = 0; i < 1600; i++)
