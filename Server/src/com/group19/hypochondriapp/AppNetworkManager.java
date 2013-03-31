@@ -105,6 +105,7 @@ public class AppNetworkManager implements Runnable
 			{
 				do
 				{
+					if(MainManager.isShutdown()) return;
 					try
 					{
 						socket = server.accept();
