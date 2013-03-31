@@ -5,33 +5,35 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 
 public class AnalysisManager implements Runnable {
 
-	private Cell[] Grid;
+	@SuppressWarnings("deprecation")
+	private int[] Pop;
+	private int[] SetPop;
+	private double[] Ill;
+	private int[] Borough;
+	private SentData ToBeSent = new SentData();
 	
 	public static final int TWITSCALAR = 30;
 	
 	public void init() 
 	{
 		
-		Grid = new Cell[1600];
 		int[] PopDen = MainManager.getDataManager().getBoroughDensities();
-		int[] BoroughPlaces = MainManager.getDataManager().getBoroughPlaces();
-				
-		for(int i = 0; i < 1600; i++)
-		{
-	
-			Grid[i].setBor(BoroughPlaces[i]);
-			Grid[i].setPop(PopDen[BoroughPlaces[i]]);
-					
-		}
+		Borough = MainManager.getDataManager().getBoroughPlaces();
+		SentData ToBeSent = new SentData();	
+		for(int i = 0; i < 1600; i++)	{ SetPop[i] = PopDen[Borough[i]];	}
+		Pop = SetPop;
 		
 	}
 	
+	public void resetPop()	{ Pop = SetPop;	}
+	
 	//Converts from Long and latitude to cell position.
 	
-	public int cordConv(double x, double y) 
+	public int cordConv(double y, double x) 
 	{
 		
 		x = (x + 0.5)/0.02;
@@ -60,7 +62,7 @@ public class AnalysisManager implements Runnable {
 		
 		for(int i = 0; i < 1600; i++)	
 		{ 
-			try{ average += Grid[i].getIll()/Grid[i].getPop();	}
+			try{ average += Ill[i]/Pop[i];	}
 			catch (Exception e) 	{ Fails++;	}
 		}
 		try { return average/(1600 - Fails);	}
@@ -91,6 +93,8 @@ public class AnalysisManager implements Runnable {
 		
 	}
 	
+	public SentData getData()	{ return ToBeSent;	}
+	
 	public void setBoroughs()
 	{
 		
@@ -108,153 +112,153 @@ public class AnalysisManager implements Runnable {
 		
 		//Barking and Dagenham.
 		
-		FilSqu(869, 6, 5, 2);
+		FilSqu(869, 6, 5, 2, Bor);
 		
-		FilSqu(1112, 6, 2, 2);
+		FilSqu(1112, 6, 2, 2, Bor);
 				
 		//Barnet.
 		
-		FilSqu(1172, 11, 5, 3);
+		FilSqu(1172, 11, 5, 3, Bor);
 		
 		//Bexley.
 		
-		FilSqu(631, 6, 9, 4);
+		FilSqu(631, 6, 9, 4, Bor);
 		
 		//Brent.
 		
-		FilSqu((24*40 + 10), 2, 5, 5);
+		FilSqu((24*40 + 10), 2, 5, 5, Bor);
 		
-		FilSqu((26*40 + 12), 3, 3, 5);
+		FilSqu((26*40 + 12), 3, 3, 5, Bor);
 		
 		//Bromley.
 		
-		FilSqu(24, 15, 16, 6);
+		FilSqu(24, 15, 16, 6, Bor);
 		
 		//Camden.
 		
-		FilSqu((24*40 + 15), 5, 9, 7);
+		FilSqu((24*40 + 15), 5, 9, 7, Bor);
 		
-		FilSqu((22 + 20*40), 4, 2, 7);
+		FilSqu((22 + 20*40), 4, 2, 7, Bor);
 		
 		//Crydon.
 		
-		FilSqu(18, 15, 6, 8);  
+		FilSqu(18, 15, 6, 8, Bor);  
 		
 		//Ealing.
 		
-		FilSqu((19*40), 1, 5, 9);
+		FilSqu((19*40), 1, 5, 9, Bor);
 		
-		FilSqu((19*40 + 5), 7, 5, 9);
+		FilSqu((19*40 + 5), 7, 5, 9, Bor);
 		
-		FilSqu((19*40+ 10), 5, 1, 9);
+		FilSqu((19*40+ 10), 5, 1, 9, Bor);
 		
 		//Enfield.
 		
-		FilSqu((31*40 + 17), 9, 6, 10);
+		FilSqu((31*40 + 17), 9, 6, 10, Bor);
 		
 		//Greenwich.
 		
-		FilSqu((18*40 + 27), 3, 4, 11);
+		FilSqu((18*40 + 27), 3, 4, 11, Bor);
 		
-		FilSqu((15*40 + 29), 3, 2, 11);
+		FilSqu((15*40 + 29), 3, 2, 11, Bor);
 		
 		//Hackney.
 		
-		FilSqu((23*40 + 25), 3, 1, 12);
+		FilSqu((23*40 + 25), 3, 1, 12, Bor);
 		
-		FilSqu((26*40 + 25), 3, 2, 12);
+		FilSqu((26*40 + 25), 3, 2, 12, Bor);
 		
 		//Hammersmith and Fulham.
 		
-		FilSqu((16*40 + 11), 8, 3, 13);
+		FilSqu((16*40 + 11), 8, 3, 13, Bor);
 		
 		//Haringey.
 		
-		FilSqu((29*40 + 17), 2, 6, 14);
+		FilSqu((29*40 + 17), 2, 6, 14, Bor);
 		
 		//Harrow.
 		
-		FilSqu((26*40 + 5), 14, 7, 15);
+		FilSqu((26*40 + 5), 14, 7, 15, Bor);
 		
 		//Havering.
 		
-		FilSqu((21*40 + 34), 19, 6, 16);
+		FilSqu((21*40 + 34), 19, 6, 16, Bor);
 		
 		//Hillingdon.
 		
-		FilSqu((20*40), 20, 5, 17);
+		FilSqu((20*40), 20, 5, 17, Bor);
 		
 		//Hounslow.
 		
-		FilSqu((13*40), 6, 11, 18);
+		FilSqu((13*40), 6, 11, 18, Bor);
 		
 		//Islington.
 		
-		FilSqu((23*40 + 24), 6, 1, 19);
+		FilSqu((23*40 + 24), 6, 1, 19, Bor);
 		
 		//Kensington and Chelsea.
 		
-		FilSqu((16*40 + 14), 5, 4, 20);
+		FilSqu((16*40 + 14), 5, 4, 20, Bor);
 		
-		FilSqu((21*40 + 14), 3, 2, 20);
+		FilSqu((21*40 + 14), 3, 2, 20, Bor);
 		
 		//Kingston upon Thames.
 		
-		FilSqu(0, 10, 11, 21);
+		FilSqu(0, 10, 11, 21, Bor);
 		
 		//Lambeth.
 		
-		FilSqu((15*40 + 18), 5, 6, 22);
+		FilSqu((15*40 + 18), 5, 6, 22, Bor);
 		
 		//Lewisham.
 		
-		FilSqu((15*40 + 25), 3, 4, 23);
+		FilSqu((15*40 + 25), 3, 4, 23, Bor);
 		
-		FilSqu((18*40 + 25), 3, 2, 23);
+		FilSqu((18*40 + 25), 3, 2, 23, Bor);
 		
 		//Merton.
 		
-		FilSqu((8*40 + 11), 6, 7, 24);
+		FilSqu((8*40 + 11), 6, 7, 24, Bor);
 		
 		//Newham.
 		
-		FilSqu((21*40 + 27), 6, 2, 25);
+		FilSqu((21*40 + 27), 6, 2, 25, Bor);
 		
 		//Redbridge.
 		
-		FilSqu((27*40 + 27), 6, 5, 26);
+		FilSqu((27*40 + 27), 6, 5, 26, Bor);
 		
-		FilSqu((33*40 + 27), 7, 7, 26);
+		FilSqu((33*40 + 27), 7, 7, 26, Bor);
 		
 		//Richmond upon Thames.
 		
-		FilSqu((10*40), 3, 11, 27);
+		FilSqu((10*40), 3, 11, 27, Bor);
 		
 		//Southwark.
 		
-		FilSqu((15*40 + 24), 6, 1, 28);
+		FilSqu((15*40 + 24), 6, 1, 28, Bor);
 		
 		//Sutton
 		
-		FilSqu(11, 8, 7, 29);
+		FilSqu(11, 8, 7, 29, Bor);
 		
 		//Tower Hamlets.
 		
-		FilSqu((21*40 + 26), 5, 1, 30);
+		FilSqu((21*40 + 26), 5, 1, 30, Bor);
 		
 		//Waltham Forest.
 		
-		FilSqu((29*40 + 23), 11, 4, 31);
+		FilSqu((29*40 + 23), 11, 4, 31, Bor);
 		
 		//Wandsworth.
 		
-		FilSqu((14*40 + 11), 2, 7, 32);
+		FilSqu((14*40 + 11), 2, 7, 32, Bor);
 		
 		//Westminster.
 		
-		FilSqu((20*40 + 18), 4, 4, 33);
+		FilSqu((20*40 + 18), 4, 4, 33, Bor);
 		
-		FilSqu((21*40 + 16), 3, 2, 33);
+		FilSqu((21*40 + 16), 3, 2, 33, Bor);
 		
 		*/
 		
@@ -342,7 +346,7 @@ public class AnalysisManager implements Runnable {
 		
 	}
 	
-	public int[] findBoroughCells(int Borough)
+	public int[] findBoroughCells(int borough)
 	{
 	
 		int[] temp = new int[1600];
@@ -351,7 +355,7 @@ public class AnalysisManager implements Runnable {
 		for(int i = 0; i < 1600; i++)
 		{
 			
-			if(Grid[i].getBor() == Borough)
+			if(Borough[i] == borough)
 			{
 				
 				temp[Num] = i;
@@ -369,135 +373,149 @@ public class AnalysisManager implements Runnable {
 	
 	//Function will be called, to add a tweet.
 	
-	public void addTweet(String Place)
+	public double[] getTweetArray()
 	{
 		
+		ArrayList<String> Tweets = MainManager.getTwitterManager().getTweets();
 		String[] PlaceNames = MainManager.getDataManager().getBoroughNames();
+		double[] Return = new double[1600];
 		
-		try
+		for(int k = 0; k < Tweets.size(); k++)
 		{
 			
-			for(int i = 0; i < 33; i++)
-			{
+			String Place = Tweets.get(k);
 			
-				if(Place.contains(PlaceNames[i]))
+			boolean ContinueNeeded = false;
+			
+			try
+			{
+				
+				for(int i = 0; i < 33; i++)
 				{
-					
-					int[] Cells = findBoroughCells(i+1);
-					
-					for(int j = 0; j < Cells.length; j++)	
+				
+					if(Place.contains(PlaceNames[i]))
 					{
-					
-						Grid[Cells[j]].addIll(TWITSCALAR*Cells.length);
-					
+						
+						int[] Cells = findBoroughCells(i+1);
+						
+						for(int j = 0; j < Cells.length; j++)	
+						{
+						
+							Return[Cells[j]] += (TWITSCALAR*Cells.length);
+						
+						}
+						
+						ContinueNeeded = true;
+						
 					}
 					
-					return;
-					
 				}
+				
+			} catch(Exception e) 
+			{ 
+				
+				MainManager.logMessage("#AnalysisManager: Failed to identify buroughs, skipping step.");
 				
 			}
 			
-		} catch(Exception e) 
-		{ 
+			if (ContinueNeeded)
+				continue;
 			
-			MainManager.logMessage("#AnalysisManager: Failed to identify buroughs, skipping step.");
-			
-		}
-		
-		if(Place.contains("EAST"))
-		{
-			
-			for(int i = 0; i < 40; i++)
+			if(Place.contains("EAST"))
 			{
 				
-				for(int j = 0; j < 20; j++)
+				for(int i = 0; i < 40; i++)
 				{
 					
-					Grid[20+i*40+j].addIll(TWITSCALAR/800);
+					for(int j = 0; j < 20; j++)
+					{
+						
+						Return[20+i*40+j] += (TWITSCALAR/800);
+						
+					}
 					
 				}
 				
+				continue;
+				
 			}
 			
-			return;
-			
-		}
-		
-		if(Place.contains("WEST"))
-		{
-			
-			for(int i = 0; i < 40; i++)
+			if(Place.contains("WEST"))
 			{
 				
-				for(int j = 0; j < 20; j++)
+				for(int i = 0; i < 40; i++)
 				{
 					
-					Grid[i*40+j].addIll(TWITSCALAR/800);
+					for(int j = 0; j < 20; j++)
+					{
+						
+						Return[i*40+j] += (TWITSCALAR/800);
+						
+					}
 					
 				}
 				
+				continue;
+				
 			}
 			
-			return;
-			
-		}
-		
-		if(Place.contains("SOUTH"))
-		{
-			
-			for(int i = 0; i < 20; i++)
+			if(Place.contains("SOUTH"))
 			{
 				
-				for(int j = 0; j < 40; j++)
+				for(int i = 0; i < 20; i++)
 				{
 					
-					Grid[i*40+j].addIll(TWITSCALAR/800);
+					for(int j = 0; j < 40; j++)
+					{
+						
+						Return[i*40+j] += (TWITSCALAR/800);
+						
+					}
 					
 				}
 				
-			}
+				continue;
+				
+			} 
 			
-			return;
-			
-		} 
-		
-		if(Place.contains("NORTH"))
-		{
-			
-			for(int i = 0; i < 20; i++)
+			if(Place.contains("NORTH"))
 			{
 				
-				for(int j = 0; j < 40; j++)
+				for(int i = 0; i < 20; i++)
 				{
 					
-					Grid[800 + i*40+j].addIll(TWITSCALAR/800);
+					for(int j = 0; j < 40; j++)
+					{
+						
+						Return[800 + i*40+j] += (TWITSCALAR/800);
+						
+					}
 					
 				}
 				
+				continue;
+				
 			}
 			
-			return;
+			for(int i = 0; i < 1600; i++)
+			{
+				
+				Return[i] += (TWITSCALAR/1600);
+				
+			}
 			
 		}
 		
-		for(int i = 0; i < 1600; i++)
-		{
-			
-			Grid[i].addIll(TWITSCALAR/1600);
-			
-		}
-		
-		return;
+		return Return;
 		
 	}
 	
 	//Function will be called with train travel data.
 	
-	public void movePeople(double X, double Y, double Num)
+	public void movePeople(double Y, double X, double Num)
 	{
 	
-		int Pos = cordConv(X, Y);
+		int Pos = cordConv(Y, X);
 		double IllMove = Num*getAverageIll()/9;
 		
 		if (Pos > -1)
@@ -506,33 +524,45 @@ public class AnalysisManager implements Runnable {
 			for(int i = -1; i < 2; i++)
 			{
 				
-				int a = cordConv(X + 0.02, Y + (i*0.01));
+				int a = cordConv(Y + (i*0.01), X + 0.02);
 				
 				if(a > -1)
 				{
 					
-					Grid[a].addPop((int)Num/9);
-					Grid[a].addIll(IllMove);
+					Pop[a] += ((int)Num/9);
+					if(Pop[a] < 0)
+						Pop[a] = 0;
+					Ill[a] += (IllMove);
+					if(Ill[a] < 0)
+						Ill[a] = 0;
 					
 				}
 				
-				int b = cordConv(X, Y + (i*0.01));
+				int b = cordConv(Y + (i*0.01), X);
 				
 				if(b > -1)
 				{
 					
-					Grid[a].addPop((int)Num/9);
-					Grid[a].addIll(IllMove);
+					Pop[b] += ((int)Num/9);
+					if(Pop[b] < 0)
+						Pop[b] = 0;
+					Ill[b] += (IllMove);
+					if(Ill[b] < 0)
+						Ill[b] = 0;
 					
 				}
 				
-				int c = cordConv(X - 0.02, Y + (i*0.01));
+				int c = cordConv(Y + (i*0.01), X - 0.02);
 				
 				if(c > -1)
 				{
 					
-					Grid[a].addPop((int)Num/9);
-					Grid[a].addIll(IllMove);
+					Pop[c] += ((int)Num/9);
+					if(Pop[c] < 0)
+						Pop[c] = 0;
+					Ill[c] += (IllMove);
+					if(Ill[c] < 0)
+						Ill[c] = 0;
 					
 				}
 				
@@ -546,92 +576,126 @@ public class AnalysisManager implements Runnable {
 		}
 		
 	}
+
+	public void addTransport(Calendar date)
+	{
+		int Day = date.get(Calendar.DAY_OF_WEEK);
+		int MinRep = (int)(date.get(Calendar.MINUTE)/15);
+		int HourRep = date.get(Calendar.HOUR) - 2;
+		int[] TrainStations = MainManager.getDataManager().getTrainStations();
+		
+		
+		if(((Day == 0) && (HourRep >= 0)) || ((Day == 1) && (HourRep < 0)))
+		{
+			
+			int[][] TravelDataOut = MainManager.getDataManager().getSunTravelOutData();
+			int[][] TravelDataIn = MainManager.getDataManager().getSunTravelInData();
+			double Average = getAverageIll();
+			
+			for (int i = 0; i < 268; i++) 
+			{
+				
+				for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
+				{
+					
+					movePeople(TrainStations[i*2], TrainStations[i*2+1], TravelDataIn[i][j]);
+					movePeople(TrainStations[i*2], TrainStations[i*2+1], -TravelDataOut[i][j]);
+					
+				}
+				
+			}
+			
+		}else if(((Day == 7) && (HourRep >= 0)) || ((Day == 0) && (HourRep < 0)))
+		{
+			
+			int[][] TravelDataOut = MainManager.getDataManager().getSatTravelOutData();
+			int[][] TravelDataIn = MainManager.getDataManager().getSatTravelInData();
+			double Average = getAverageIll();
+			
+			for (int i = 0; i < 268; i++) 
+			{
+				
+				for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
+				{
+					
+					movePeople(TrainStations[i*2], TrainStations[i*2+1], TravelDataIn[i][j]);
+					movePeople(TrainStations[i*2], TrainStations[i*2+1], -TravelDataOut[i][j]);
+					
+				}
+				
+			}
+			
+		} else
+		{
+			
+			int[][] TravelDataOut = MainManager.getDataManager().getWeekTravelOutData();
+			int[][] TravelDataIn = MainManager.getDataManager().getWeekTravelInData();
+			double Average = getAverageIll();
+			
+			for (int i = 0; i < 268; i++) 
+			{
+				
+				for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
+				{
+					
+					movePeople(TrainStations[i*2], TrainStations[i*2+1], TravelDataIn[i][j]);
+					movePeople(TrainStations[i*2], TrainStations[i*2+1], -TravelDataOut[i][j]);
+					
+				}
+				
+			}
+			
+		}
+		
+	}
+
+	public void update()
+	{
+		
+		double[][] DataToBeSent = new double[14*24*4][1600];
+		
+	    Calendar CurrentDate = Calendar.getInstance();
+	    CurrentDate.setTime(new Date());
+		
+		Ill = getTweetArray();
+		addTransport(CurrentDate);
+		
+		DataToBeSent[0] = Ill;
+		
+		resetPop();
+		
+		double[][] PredictedState = Prediction.getPredictedState();
+		
+		for(int i = 1; i < 14*24*4; i++)
+		{
+			
+			CurrentDate.add(Calendar.MINUTE, 15);
+			Ill = PredictedState[i];
+			addTransport(CurrentDate);
+			DataToBeSent[i] = Ill;
+			resetPop();
+			
+		}
+		
+		ToBeSent.Data = DataToBeSent;
+		
+	}
 	
-	@SuppressWarnings("deprecation")
 	public void run()
 	{
+		
+		init();
 		
 		while(!MainManager.isShutdown())
 		{
 			
 			if(MainManager.getTwitterManager().isUpdated())
 			{
-				
-				init();
-				
-				ArrayList<String> Tweets = MainManager.getTwitterManager().getTweets();
-				for(int i = 0; i < Tweets.size(); i++)	{ addTweet(Tweets.get(i));	}
-				
-				int Day = Calendar.getInstance().getTime().getDay();
-				int MinRep = (int)(Calendar.getInstance().getTime().getMinutes()/15);
-				int HourRep = Calendar.getInstance().getTime().getHours() - 2;
-				int[] TrainStations = MainManager.getDataManager().getTrainStations();
-				
-				
-				if(((Day == 0) && (HourRep >= 0)) || ((Day == 1) && (HourRep < 0)))
-				{
-					
-					int[][] TravelDataOut = MainManager.getDataManager().getSunTravelOutData();
-					int[][] TravelDataIn = MainManager.getDataManager().getSunTravelInData();
-					double Average = getAverageIll();
-					
-					for (int i = 0; i < 268; i++) 
-					{
-						
-						for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
-						{
-							
-							movePeople(TrainStations[i*2], TrainStations[i*2+1], TravelDataIn[i][j]);
-							movePeople(TrainStations[i*2], TrainStations[i*2+1], -TravelDataOut[i][j]);
-							
-						}
-						
-					}
-					
-				}else if(((Day == 7) && (HourRep >= 0)) || ((Day == 0) && (HourRep < 0)))
-				{
-					
-					int[][] TravelDataOut = MainManager.getDataManager().getSatTravelOutData();
-					int[][] TravelDataIn = MainManager.getDataManager().getSatTravelInData();
-					double Average = getAverageIll();
-					
-					for (int i = 0; i < 268; i++) 
-					{
-						
-						for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
-						{
-							
-							movePeople(TrainStations[i*2], TrainStations[i*2+1], TravelDataIn[i][j]);
-							movePeople(TrainStations[i*2], TrainStations[i*2+1], -TravelDataOut[i][j]);
-							
-						}
-						
-					}
-					
-				} else
-				{
-					
-					int[][] TravelDataOut = MainManager.getDataManager().getWeekTravelOutData();
-					int[][] TravelDataIn = MainManager.getDataManager().getWeekTravelInData();
-					double Average = getAverageIll();
-					
-					for (int i = 0; i < 268; i++) 
-					{
-						
-						for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
-						{
-							
-							movePeople(TrainStations[i*2], TrainStations[i*2+1], TravelDataIn[i][j]);
-							movePeople(TrainStations[i*2], TrainStations[i*2+1], -TravelDataOut[i][j]);
-							
-						}
-						
-					}
-					
-				}
+			
+				update();
 				
 			}
-			
+							
 		}
 		
 	}
