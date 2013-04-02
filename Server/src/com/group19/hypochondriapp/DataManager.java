@@ -1,11 +1,29 @@
 package com.group19.hypochondriapp;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
+import java.util.TreeMap;
 
-public class DataManager{
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+public class DataManager
+{
+	
+	private TreeMap<String, float[]> stations;
 	
 	public DataManager() {}
+	
+	public void init()
+	{
+		stations = new TreeMap<String, float[]>();
+	}
 	
 	public String[] getBoroughNames()
 	{
@@ -168,10 +186,68 @@ public class DataManager{
 	public int[] getTrainStations()
 	{
 		
+		
+		
+		
 		int[] TrainStations = new int[268*2];
 		
 		return TrainStations;
 		
+	}
+	
+	public float[] getStationLocation(String name)
+	{
+		return stations.get(name);
+	}
+	
+	//Loads the station locations from a KML file into a TreeMap for later retrieval by AnalysisManager
+	public void loadStations()
+	{
+		try
+		{
+			DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+			Document doc = docBuilder.parse(new File("./res/TravelManager/stations.kml"));
+			
+			doc.getDocumentElement().normalize();
+			
+			NodeList stationList = doc.getElementsByTagName("Placemark");
+			
+			for(int i = 0; i < stationList.getLength(); i++)
+			{
+				Node stationNode = stationList.item(i);
+				
+				NodeList stationInfo = stationNode.getChildNodes();
+				
+				String stationName = null;
+				float[] coordinates = new float[2];
+				
+				for(int j = 0; j < stationInfo.getLength(); j++)
+				{
+					if(stationInfo.item(j).getNodeName() == "name")
+					{
+						stationName = ((Element) stationInfo.item(j)).getTextContent();
+						//stationName = stationInfo.item(j).getNodeValue();
+						System.out.println(stationName);
+					}
+					else if(stationInfo.item(j).getNodeName() == "Point")
+					{
+						String coordStr = stationInfo.item(j).getTextContent();
+						System.out.println(coordStr);
+						String[] coords = coordStr.split(",");
+						coordinates[0] = Float.parseFloat(coords[0]);
+						coordinates[1] = Float.parseFloat(coords[1]);
+					}
+				}
+				
+				stations.put(stationName, coordinates);
+			}
+		}
+		catch(Exception e)
+		{
+			MainManager.logMessage("#DataManager: Could not parse station KML file");
+			e.printStackTrace();
+		}
 	}
 	
 }
