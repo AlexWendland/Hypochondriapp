@@ -226,14 +226,11 @@ public class DataManager
 				{
 					if(stationInfo.item(j).getNodeName() == "name")
 					{
-						stationName = ((Element) stationInfo.item(j)).getTextContent();
-						//stationName = stationInfo.item(j).getNodeValue();
-						System.out.println(stationName);
+						stationName = stationInfo.item(j).getTextContent();
 					}
 					else if(stationInfo.item(j).getNodeName() == "Point")
 					{
 						String coordStr = stationInfo.item(j).getTextContent();
-						System.out.println(coordStr);
 						String[] coords = coordStr.split(",");
 						coordinates[0] = Float.parseFloat(coords[0]);
 						coordinates[1] = Float.parseFloat(coords[1]);
