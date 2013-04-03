@@ -2,7 +2,12 @@ package com.group19.hypochondriapp;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.TreeMap;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -24,6 +29,8 @@ public class DataManager
 	{
 		stations = new TreeMap<String, float[]>();
 	}
+	
+	
 	
 	public String[] getBoroughNames()
 	{
@@ -170,25 +177,91 @@ public class DataManager
 	
 	public int[][] getSunTravelOutData()
 	{
-		
 		int[][] TravelData = new int[268][24*4];
 		
 		return TravelData;
+	}
+	
+	
+	//Gets the insight for the given day
+	//Probably contains a bug where record will not be found as 01-01-2011 is in flu2010.csv
+	public byte getGoogleInsights(Calendar date)
+	{
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+		Byte returnVal = -1;
+		String dir = new String("./res/GoogleManager/flu" + date.get(Calendar.YEAR) + ".csv");
+		File csv = new File(dir);
+		BufferedReader reader = null;
 		
+		try
+		{
+			reader = new BufferedReader(new FileReader(csv));
+		}
+		catch(FileNotFoundException e)
+		{
+			MainManager.logMessage("#DataManager: Google Insights does not exist for that year, try updating GoogleManager");
+			e.printStackTrace();
+			return -1;
+		}
+		
+		String record = new String();
+		
+		try
+		{
+			do
+			{
+				record = reader.readLine();
+				if(record.length() == 0) continue;
+				
+				if(Character.isDigit(record.charAt(0)))
+				{
+					String[] pair = record.split(",");
+					String[] dates = pair[0].split(" - ");
+					
+					long earlyDate = format.parse(dates[0]).getTime();
+					long laterDate = format.parse(dates[1]).getTime();
+					
+					if(date.getTimeInMillis() < laterDate && date.getTimeInMillis() >= earlyDate)
+					{
+						returnVal = Byte.parseByte(pair[1]);
+						break;
+					}
+				}
+			}
+			while(record != null);
+		}
+		catch(IOException e)
+		{
+			MainManager.logMessage("#DataManager: Could not read Google Insights, encountered IOException");
+			e.printStackTrace();
+			returnVal = -1;
+		}
+		catch(ParseException e)
+		{
+			MainManager.logMessage("#DataManager: Unable to parse dates in Google Insights file");
+			e.printStackTrace();
+			returnVal = -1;
+		}
+		finally
+		{
+			try
+			{
+				reader.close();
+			}
+			catch(Exception e){}
+		}
+		
+		return returnVal;
 	}
 	
 	/*
 	 
-	Will put station i's x, y coordinate in TrainStations[i*2], TrainStaitions[i*2 + 1].
+	Will put station i's x, y coordinate in TrainStations[i*2], TrainStations[i*2 + 1].
 	 
 	*/
 	
 	public int[] getTrainStations()
 	{
-		
-		
-		
-		
 		int[] TrainStations = new int[268*2];
 		
 		return TrainStations;
@@ -197,7 +270,7 @@ public class DataManager
 	
 	public float[] getStationLocation(String name)
 	{
-		return stations.get(name);
+		return stations.get(name.toUpperCase());
 	}
 	
 	//Loads the station locations from a KML file into a TreeMap for later retrieval by AnalysisManager
@@ -237,7 +310,7 @@ public class DataManager
 					}
 				}
 				
-				stations.put(stationName, coordinates);
+				stations.put(stationName.toUpperCase(), coordinates);
 			}
 		}
 		catch(Exception e)
@@ -246,5 +319,4 @@ public class DataManager
 			e.printStackTrace();
 		}
 	}
-	
 }
