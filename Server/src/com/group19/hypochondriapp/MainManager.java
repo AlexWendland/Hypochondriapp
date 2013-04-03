@@ -1,9 +1,11 @@
 package com.group19.hypochondriapp;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -16,8 +18,11 @@ public class MainManager
 	//List of all modules.
 	private static TwitterManager twitterManager;
 	private static GoogleManager googleManager;
+	private static TravelManager travelManager;
 	private static AppNetworkManager appNetworkManager;
 	private static DataManager dataManager;
+	
+	private static Thread[] managerThreads;
 	
 	//Objects for storing logged messages.
 	private static ConcurrentLinkedQueue<String> log;
@@ -30,7 +35,14 @@ public class MainManager
 		
 		twitterManager = new TwitterManager();
 		googleManager = new GoogleManager();
+		travelManager = new TravelManager();
 		appNetworkManager = new AppNetworkManager();
+		dataManager = new DataManager();
+		
+		managerThreads = new Thread[3];
+		
+		managerThreads[0] = new Thread(twitterManager);
+		managerThreads[1] = new Thread(appNetworkManager);
 	}
 	
 	public static void cleanup()
@@ -45,7 +57,7 @@ public class MainManager
 		System.out.println(toLog);
 	}
 	
-	public static void writeLog()
+	private static void writeLog()
 	{
 		if(log.isEmpty()) return;
 		
@@ -76,35 +88,119 @@ public class MainManager
 	{
 		init();
 		
+		logMessage("#MainManager: Server initialised, ready to accept commands");
+	
+		String command = new String();
 		
-		/*
-		Thread twitter = new Thread(twitterManager);
-		twitter.start();
+		BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
 		
-		//Tests for the twitter miner.
-		System.in.read();
-		shutdown = true;
-		twitter.interrupt();
-		
-		try 
+		while(!command.startsWith("shutdown"))
 		{
-			twitter.join();
-		} 
-		catch (InterruptedException e) {}
-		
-		*/
-		
-		appNetworkManager.run();
-		
-		//googleManager.updateCSV();
+			command = console.readLine().toLowerCase();
+			
+			interpretCmd(command);
+			
+			if(command.startsWith("update")) System.out.println("Okay");
+		}
 		
 		cleanup();
+	}
+	
+	//Performs currently available actions from console
+	private static void interpretCmd(String command)
+	{
+		if(command.startsWith("start"))
+		{
+			if(command.contains("twittermanager"))
+			{
+				if(managerThreads[0].isAlive())
+				{
+					logMessage("#MainManager: Cannot start TwitterManager as it is already alive");
+				}
+				else
+				{
+					managerThreads[0].start();
+				}
+			}
+			
+			else if(command.contains("appnetworkmanager"))
+			{
+				if(managerThreads[2].isAlive())
+				{
+					logMessage("#MainManager: Cannot start AppNetworkManager as it is already alive");
+				}
+				else
+				{
+					managerThreads[2].start();
+				}
+			}
+			
+			else
+			{
+				System.out.println("Unknown start command");
+				return;
+			}
+		}
+		
+		else if(command.startsWith("update"))
+		{
+			if(command.contains("googlemanager"))
+			{
+				String[] arguments = command.split(" ");
+				
+				try
+				{
+					googleManager.setUpdateYear(Integer.parseInt(arguments[2]));
+				}
+				catch(Exception e)
+				{
+					System.out.println("Syntax: update googlemanager <year>");
+					return;
+				}
+				
+				Thread google = new Thread(googleManager);
+				google.start();
+			}
+			
+			else if(command.contains("travelmanager"))
+			{
+				Thread travel = new Thread(travelManager);
+				travel.start();
+			}
+			
+			else
+			{
+				System.out.println("Unknown update command");
+				return;
+			}
+		}
+		
+		else if (command.startsWith("shutdown"))
+		{
+			shutdown();
+		}
+		
+		else
+		{
+			System.out.println("Unknown command");
+			return;
+		}
+	}
+	
+	private static void shutdown()
+	{
+		shutdown = true;
+		
+		for(int i = 0; i < managerThreads.length; i++)
+		{
+			managerThreads[i].interrupt();
+		}
 	}
 	
 	public static TwitterManager getTwitterManager() { return twitterManager; }
 	public static GoogleManager getGoogleManager() { return googleManager; }
 	public static AppNetworkManager getAppNetworkManager() { return appNetworkManager; }
-	public static DataManager getDataManager() {return dataManager; };
+	public static DataManager getDataManager() { return dataManager; }
 	
 	public static boolean isShutdown() { return shutdown; }
 
