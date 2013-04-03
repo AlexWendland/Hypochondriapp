@@ -15,12 +15,12 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class DataManager
 {
+	//To be used with loadStationTravel to specify the info desired
 	public static final String ENTER = "EN11";
 	public static final String EXIT = "EX11";
 	public static final String WEEK = "Week";
@@ -40,6 +40,7 @@ public class DataManager
 	{
 		stations = new TreeMap<String, float[]>();
 		currentStations = new LinkedList<StationInfo>();
+		loadStations();
 	}
 	
 	
@@ -136,76 +137,21 @@ public class DataManager
 		
 	}
 	
-	/*
-	 
-	Will return the travel data in the form of int[Stations][time step in order].
+
 	
-	*/
-	
-	public int[][] getWeekTravelInData()
-	{
-		
-		int[][] TravelData = new int[268][24*4];
-		
-		return TravelData;
-		
-	}
-	
-	public int[][] getSatTravelInData()
-	{
-		
-		int[][] TravelData = new int[268][24*4];
-		
-		return TravelData;
-		
-	}
-	
-	public int[][] getSunTravelInData()
-	{
-		
-		int[][] TravelData = new int[268][24*4];
-		
-		return TravelData;
-		
-	}
-	
-	public int[][] getWeekTravelOutData()
-	{
-		
-		int[][] TravelData = new int[268][24*4];
-		
-		return TravelData;
-		
-	}
-	
-	public int[][] getSatTravelOutData()
-	{
-		
-		int[][] TravelData = new int[268][24*4];
-		
-		return TravelData;
-		
-	}
-	
-	public int[][] getSunTravelOutData()
-	{
-		int[][] TravelData = new int[268][24*4];
-		
-		return TravelData;
-	}
-	
+	//Gets the next StationInfo as long as loadStationTravel has been called and there are more stations available to get
 	public StationInfo getNextStation()
 	{
 		if(currentStations.isEmpty()) return null;
 		else return currentStations.poll();
 	}
 	
+	//Loads from the file next to be used by Analysis to enable getNextStation()
 	public void loadStationTravel(String direction, String time)
 	{
 		currentStations.clear();
 		File csv = new File("./res/TravelManager/CSVTravelData/" + direction + time + ".xls.csv");
 		BufferedReader reader = null;
-		int line = 0;
 		
 		try
 		{
@@ -224,8 +170,6 @@ public class DataManager
 		{
 			do
 			{
-				line++;
-				System.out.println(line);
 				record = reader.readLine();
 				if(record == null) break;
 				if(record.length() == 0) continue;
@@ -235,8 +179,6 @@ public class DataManager
 					String[] attributes = record.split(",");
 					String stationName = attributes[1];
 					stationName = stationName.replaceAll("\"", "").trim();
-					//stationName.trim();
-					System.out.println(stationName + "#");
 					float[] coords = getStationLocation(stationName);
 					
 					int[] values = new int[96]; //96 sets of 15 minutes per day
@@ -368,7 +310,7 @@ public class DataManager
 	}
 	
 	//Loads the station locations from a KML file into a TreeMap for later retrieval by AnalysisManager
-	public void loadStations()
+	private void loadStations()
 	{
 		try
 		{
@@ -416,6 +358,7 @@ public class DataManager
 		}
 	}
 	
+	//Class containing coordinates and movement of people for a single station
 	public class StationInfo
 	{
 		private StationInfo(float[] coords, int[] peeps)
