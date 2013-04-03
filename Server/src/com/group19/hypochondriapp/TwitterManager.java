@@ -89,7 +89,7 @@ public class TwitterManager implements Runnable
 		}
 	}
 
-	//Gets all illness tweets from the past 24 hours from London
+	//Gets all illness tweets from the past 48 hours from London
 	private void updateTweets()
 	{
 		Twitter twitter = new TwitterFactory(config).getInstance();
@@ -130,7 +130,7 @@ public class TwitterManager implements Runnable
 				String location = null;
 				
 				long tweetTime = resultList.get(i).getCreatedAt().getTime();
-				if(currentTime - tweetTime > MILLIS_IN_DAY)
+				if(currentTime - tweetTime > MILLIS_IN_DAY*2) //Using 48 hours
 				{
 					finished = true;
 					break;
@@ -140,8 +140,6 @@ public class TwitterManager implements Runnable
 				location = location.toUpperCase();
 				if(!location.contains("LONDON")) continue;
 				else locations.add(location);
-
-				System.out.println(location + ":" + resultList.get(i).getText());
 			}
 			
 			if(!result.hasNext())
