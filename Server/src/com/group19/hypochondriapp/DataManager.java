@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.LinkedList;
 import java.util.TreeMap;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -20,14 +21,25 @@ import org.w3c.dom.NodeList;
 
 public class DataManager
 {
+	public static final String ENTER = "EN11";
+	public static final String EXIT = "EX11";
+	public static final String WEEK = "Week";
+	public static final String SAT = "sat";
+	public static final String SUN = "sun";
+	
 	
 	private TreeMap<String, float[]> stations;
+	private LinkedList<StationInfo> currentStations;
 	
-	public DataManager() {}
+	public DataManager() 
+	{
+		init();
+	}
 	
 	public void init()
 	{
 		stations = new TreeMap<String, float[]>();
+		currentStations = new LinkedList<StationInfo>();
 	}
 	
 	
@@ -182,9 +194,91 @@ public class DataManager
 		return TravelData;
 	}
 	
+	public StationInfo getNextStation()
+	{
+		if(currentStations.isEmpty()) return null;
+		else return currentStations.poll();
+	}
+	
+	public void loadStationTravel(String direction, String time)
+	{
+		currentStations.clear();
+		File csv = new File("./res/TravelManager/CSVTravelData/" + direction + time + ".xls.csv");
+		BufferedReader reader = null;
+		int line = 0;
+		
+		try
+		{
+			reader = new BufferedReader(new FileReader(csv));
+		}
+		catch(FileNotFoundException e)
+		{
+			MainManager.logMessage("#DataManager: Could not find file \"" + csv.getPath() + "\"");
+			e.printStackTrace();
+			return;
+		}
+		
+		String record = new String();
+		
+		try
+		{
+			do
+			{
+				line++;
+				System.out.println(line);
+				record = reader.readLine();
+				if(record == null) break;
+				if(record.length() == 0) continue;
+				
+				if(Character.isDigit(record.charAt(0)))
+				{
+					String[] attributes = record.split(",");
+					String stationName = attributes[1];
+					stationName = stationName.replaceAll("\"", "").trim();
+					//stationName.trim();
+					System.out.println(stationName + "#");
+					float[] coords = getStationLocation(stationName);
+					
+					int[] values = new int[96]; //96 sets of 15 minutes per day
+					
+					for(int i = 0; i < 96; i++)
+					{
+						values[i] = Integer.parseInt(attributes[4 + i]);
+					}
+					
+					currentStations.add(new StationInfo(coords, values));
+				}
+			}
+			while(record != null);
+		}
+		catch(IOException e)
+		{
+			MainManager.logMessage("#DataManager: Could not read \"" + csv.getPath() + "\", encountered IOException");
+			e.printStackTrace();
+		}
+		catch(NumberFormatException e)
+		{
+			MainManager.logMessage("#DataManager: Unable to parse values in\"" + csv.getPath() + "\"");
+			e.printStackTrace();
+		}
+		finally
+		{
+			try
+			{
+				reader.close();
+			}
+			catch(Exception e){}
+		}
+		
+		return;
+		
+		
+	}
+	
 	
 	//Gets the insight for the given day
 	//Probably contains a bug where record will not be found as 01-01-2011 is in flu2010.csv
+	//Returns -1 if nothing found in file
 	public byte getGoogleInsights(Calendar date)
 	{
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
@@ -300,6 +394,7 @@ public class DataManager
 					if(stationInfo.item(j).getNodeName() == "name")
 					{
 						stationName = stationInfo.item(j).getTextContent();
+						if(stationName.contains(" Station")) stationName = stationName.replaceFirst(" Station", "");
 					}
 					else if(stationInfo.item(j).getNodeName() == "Point")
 					{
@@ -310,7 +405,8 @@ public class DataManager
 					}
 				}
 				
-				stations.put(stationName.toUpperCase(), coordinates);
+				//System.out.println(stationName.toUpperCase().trim());
+				stations.put(stationName.toUpperCase().trim(), coordinates);
 			}
 		}
 		catch(Exception e)
@@ -318,5 +414,17 @@ public class DataManager
 			MainManager.logMessage("#DataManager: Could not parse station KML file");
 			e.printStackTrace();
 		}
+	}
+	
+	public class StationInfo
+	{
+		private StationInfo(float[] coords, int[] peeps)
+		{
+			coordinates = coords;
+			people = peeps;
+		}
+		
+		public float[] coordinates;
+		public int[] people;
 	}
 }
