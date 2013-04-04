@@ -1,43 +1,76 @@
 package com.group19.hypochondriapp;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import com.group19.hypochondriapp.DataManager.StationInfo;
+
 public class AnalysisManager implements Runnable {
 
-	@SuppressWarnings("deprecation")
-	private int[] Pop;
-	private int[] SetPop;
-	private double[] Ill;
-	private int[] Borough;
-	private SentData ToBeSent = new SentData();
+	private int[] pop;
+	private int[] setPop;
+	private float[] ill;
+	private byte[] borough;
+	private SentData toBeSent = new SentData();
+	private boolean updated;
+	File tempStore = new File("./res/tempStore.txt");
+	File currentStore = new File("./res/currnetStore.txt");
 	
+	/*
+	
+	FileWriter tempFW = new FileWriter(tempStore.getAbsoluteFile());
+	BufferedWriter tempBW = new BufferedWriter(tempFW);
+	FileWriter currentFW = new FileWriter(currentStore.getAbsoluteFile());
+	BufferedWriter currentBW = new BufferedWriter(currentFW);
+	
+	*/
+			
 	public static final int TWITSCALAR = 30;
+	public static final int DAY_OF_UPDATE = 0;
 	
 	public void init() 
 	{
 		
-		int[] PopDen = MainManager.getDataManager().getBoroughDensities();
-		Borough = MainManager.getDataManager().getBoroughPlaces();
-		SentData ToBeSent = new SentData();	
-		for(int i = 0; i < 1600; i++)	{ SetPop[i] = PopDen[Borough[i]];	}
-		Pop = SetPop;
+		int[] popDen = MainManager.getDataManager().getBoroughDensities();
+		borough = MainManager.getDataManager().getBoroughPlaces();	
+		for(int i = 0; i < 1600; i++)	{ setPop[i] = popDen[borough[i]];	}
+		pop = setPop;
+		updated = true;
+		
+		try
+		{
+		
+			if (!tempStore.exists()) 
+				tempStore.createNewFile();
+			
+			if (!currentStore.exists()) 
+				currentStore.createNewFile();
+		
+		} catch (Exception e)
+		{
+			
+			MainManager.logMessage("#AnalysisManager: No data stores for generated data, recomend shutdown." );
+			
+		}
+			
 		
 	}
 	
-	public void resetPop()	{ Pop = SetPop;	}
+	public void resetPop()	{ pop = setPop;	}
 	
 	//Converts from Long and latitude to cell position.
 	
-	public int cordConv(double y, double x) 
+	public int cordConv(float y, float x) 
 	{
 		
-		x = (x + 0.5)/0.02;
-		y = (y - 51.3)/0.01;
+		x = (float) ((x + 0.5)/0.02);
+		y = (float) ((y - 51.3)/0.01);
 		int pos = 0;
 			
 		if( (x <= 0) || (x >= 40) )
@@ -54,51 +87,51 @@ public class AnalysisManager implements Runnable {
 		
 	}
 	
-	public double getAverageIll()
+	public float getAverageIll()
 	{
 		
-		double average = 0;
-		double Fails = 0;
+		float average = 0;
+		float fails = 0;
 		
 		for(int i = 0; i < 1600; i++)	
 		{ 
-			try{ average += Ill[i]/Pop[i];	}
-			catch (Exception e) 	{ Fails++;	}
+			try{ average += ill[i]/pop[i];	}
+			catch (Exception e) 	{ fails++;	}
 		}
-		try { return average/(1600 - Fails);	}
+		try { return average/(1600 - fails);	}
 		catch (Exception e)	{ return 0;	}
 		
 	}
 	
 	
-	public void filSqu(int Star, int Hig, int Len, int Val, int[] Bor)
+	public void filSqu(int star, int hig, int len, int val, int[] bor)
 	{
 		
-		int Num = Star;
+		int num = star;
 		
-		for (int i = 0; i < Hig; i++)
+		for (int i = 0; i < hig; i++)
 		{
 		
-			for (int j = 0; j < Len; j++)
+			for (int j = 0; j < len; j++)
 			{
 				
-				Bor[Num] = Val;
-				Num ++;
+				bor[num] = val;
+				num ++;
 				
 			}
 		
-			Num += 40 - Len;
+			num += 40 - len;
 		
 		}
 		
 	}
 	
-	public SentData getData()	{ return ToBeSent;	}
+	public SentData getData()	{ return toBeSent;	}
 	
 	public void setBoroughs()
 	{
 		
-		int[] Bor = new int[1600];
+		int[] bor = new int[1600];
 		
 		//Manual Method.
 		
@@ -108,165 +141,165 @@ public class AnalysisManager implements Runnable {
 		
 		//City of London.
 		
-		FilSqu(864, 2, 2, 1, Bor);
+		FilSqu(864, 2, 2, 1, bor);
 		
 		//Barking and Dagenham.
 		
-		FilSqu(869, 6, 5, 2, Bor);
+		FilSqu(869, 6, 5, 2, bor);
 		
-		FilSqu(1112, 6, 2, 2, Bor);
+		FilSqu(1112, 6, 2, 2, bor);
 				
 		//Barnet.
 		
-		FilSqu(1172, 11, 5, 3, Bor);
+		FilSqu(1172, 11, 5, 3, bor);
 		
 		//Bexley.
 		
-		FilSqu(631, 6, 9, 4, Bor);
+		FilSqu(631, 6, 9, 4, bor);
 		
 		//Brent.
 		
-		FilSqu((24*40 + 10), 2, 5, 5, Bor);
+		FilSqu((24*40 + 10), 2, 5, 5, bor);
 		
-		FilSqu((26*40 + 12), 3, 3, 5, Bor);
+		FilSqu((26*40 + 12), 3, 3, 5, bor);
 		
 		//Bromley.
 		
-		FilSqu(24, 15, 16, 6, Bor);
+		FilSqu(24, 15, 16, 6, bor);
 		
 		//Camden.
 		
-		FilSqu((24*40 + 15), 5, 9, 7, Bor);
+		FilSqu((24*40 + 15), 5, 9, 7, bor);
 		
-		FilSqu((22 + 20*40), 4, 2, 7, Bor);
+		FilSqu((22 + 20*40), 4, 2, 7, bor);
 		
 		//Crydon.
 		
-		FilSqu(18, 15, 6, 8, Bor);  
+		FilSqu(18, 15, 6, 8, bor);  
 		
 		//Ealing.
 		
-		FilSqu((19*40), 1, 5, 9, Bor);
+		FilSqu((19*40), 1, 5, 9, bor);
 		
-		FilSqu((19*40 + 5), 7, 5, 9, Bor);
+		FilSqu((19*40 + 5), 7, 5, 9, bor);
 		
-		FilSqu((19*40+ 10), 5, 1, 9, Bor);
+		FilSqu((19*40+ 10), 5, 1, 9, bor);
 		
 		//Enfield.
 		
-		FilSqu((31*40 + 17), 9, 6, 10, Bor);
+		FilSqu((31*40 + 17), 9, 6, 10, bor);
 		
 		//Greenwich.
 		
-		FilSqu((18*40 + 27), 3, 4, 11, Bor);
+		FilSqu((18*40 + 27), 3, 4, 11, bor);
 		
-		FilSqu((15*40 + 29), 3, 2, 11, Bor);
+		FilSqu((15*40 + 29), 3, 2, 11, bor);
 		
 		//Hackney.
 		
-		FilSqu((23*40 + 25), 3, 1, 12, Bor);
+		FilSqu((23*40 + 25), 3, 1, 12, bor);
 		
-		FilSqu((26*40 + 25), 3, 2, 12, Bor);
+		FilSqu((26*40 + 25), 3, 2, 12, bor);
 		
 		//Hammersmith and Fulham.
 		
-		FilSqu((16*40 + 11), 8, 3, 13, Bor);
+		FilSqu((16*40 + 11), 8, 3, 13, bor);
 		
 		//Haringey.
 		
-		FilSqu((29*40 + 17), 2, 6, 14, Bor);
+		FilSqu((29*40 + 17), 2, 6, 14, bor);
 		
 		//Harrow.
 		
-		FilSqu((26*40 + 5), 14, 7, 15, Bor);
+		FilSqu((26*40 + 5), 14, 7, 15, bor);
 		
 		//Havering.
 		
-		FilSqu((21*40 + 34), 19, 6, 16, Bor);
+		FilSqu((21*40 + 34), 19, 6, 16, bor);
 		
 		//Hillingdon.
 		
-		FilSqu((20*40), 20, 5, 17, Bor);
+		FilSqu((20*40), 20, 5, 17, bor);
 		
 		//Hounslow.
 		
-		FilSqu((13*40), 6, 11, 18, Bor);
+		FilSqu((13*40), 6, 11, 18, bor);
 		
 		//Islington.
 		
-		FilSqu((23*40 + 24), 6, 1, 19, Bor);
+		FilSqu((23*40 + 24), 6, 1, 19, bor);
 		
 		//Kensington and Chelsea.
 		
-		FilSqu((16*40 + 14), 5, 4, 20, Bor);
+		FilSqu((16*40 + 14), 5, 4, 20, bor);
 		
-		FilSqu((21*40 + 14), 3, 2, 20, Bor);
+		FilSqu((21*40 + 14), 3, 2, 20, bor);
 		
 		//Kingston upon Thames.
 		
-		FilSqu(0, 10, 11, 21, Bor);
+		FilSqu(0, 10, 11, 21, bor);
 		
 		//Lambeth.
 		
-		FilSqu((15*40 + 18), 5, 6, 22, Bor);
+		FilSqu((15*40 + 18), 5, 6, 22, bor);
 		
 		//Lewisham.
 		
-		FilSqu((15*40 + 25), 3, 4, 23, Bor);
+		FilSqu((15*40 + 25), 3, 4, 23, bor);
 		
-		FilSqu((18*40 + 25), 3, 2, 23, Bor);
+		FilSqu((18*40 + 25), 3, 2, 23, bor);
 		
 		//Merton.
 		
-		FilSqu((8*40 + 11), 6, 7, 24, Bor);
+		FilSqu((8*40 + 11), 6, 7, 24, bor);
 		
 		//Newham.
 		
-		FilSqu((21*40 + 27), 6, 2, 25, Bor);
+		FilSqu((21*40 + 27), 6, 2, 25, bor);
 		
 		//Redbridge.
 		
-		FilSqu((27*40 + 27), 6, 5, 26, Bor);
+		FilSqu((27*40 + 27), 6, 5, 26, bor);
 		
-		FilSqu((33*40 + 27), 7, 7, 26, Bor);
+		FilSqu((33*40 + 27), 7, 7, 26, bor);
 		
 		//Richmond upon Thames.
 		
-		FilSqu((10*40), 3, 11, 27, Bor);
+		FilSqu((10*40), 3, 11, 27, bor);
 		
 		//Southwark.
 		
-		FilSqu((15*40 + 24), 6, 1, 28, Bor);
+		FilSqu((15*40 + 24), 6, 1, 28, bor);
 		
 		//Sutton
 		
-		FilSqu(11, 8, 7, 29, Bor);
+		FilSqu(11, 8, 7, 29, bor);
 		
 		//Tower Hamlets.
 		
-		FilSqu((21*40 + 26), 5, 1, 30, Bor);
+		FilSqu((21*40 + 26), 5, 1, 30, bor);
 		
 		//Waltham Forest.
 		
-		FilSqu((29*40 + 23), 11, 4, 31, Bor);
+		FilSqu((29*40 + 23), 11, 4, 31, bor);
 		
 		//Wandsworth.
 		
-		FilSqu((14*40 + 11), 2, 7, 32, Bor);
+		FilSqu((14*40 + 11), 2, 7, 32, bor);
 		
 		//Westminster.
 		
-		FilSqu((20*40 + 18), 4, 4, 33, Bor);
+		FilSqu((20*40 + 18), 4, 4, 33, bor);
 		
-		FilSqu((21*40 + 16), 3, 2, 33, Bor);
+		FilSqu((21*40 + 16), 3, 2, 33, bor);
 		
 		*/
 		
 		//Twitter method.
 		
-		String[] BoroughNames = MainManager.getDataManager().getBoroughNames();
+		String[] boroughNames = MainManager.getDataManager().getBoroughNames();
 		
-		for(int i = 0; i < 33; i++)	{ BoroughNames[i] = BoroughNames[i].toUpperCase();	}
+		for(int i = 0; i < 33; i++)	{ boroughNames[i] = boroughNames[i].toUpperCase();	}
 		
 		for(int i = 0; i < 40; i++)
 		{
@@ -275,7 +308,7 @@ public class AnalysisManager implements Runnable {
 				
 			{
 				
-				String[] Boroughs = MainManager.getTwitterManager().getLocation(51.305 + i*0.01, -0.49 + j*0.02);
+				String[] boroughs = MainManager.getTwitterManager().getLocation(51.305 + i*0.01, -0.49 + j*0.02);
 				
 				try
 				{
@@ -289,17 +322,17 @@ public class AnalysisManager implements Runnable {
 				for(int k = 0; k < 33; k++)
 				{
 				
-					if(Boroughs[0].contains(BoroughNames[k]))
+					if(boroughs[0].contains(boroughNames[k]))
 					{
 					
-						Bor[i + j*40] = k;
+						bor[i + j*40] = k;
 						break;
 					
 					}
 					else
 					{
 						
-						Bor[i + j*40] = 0;
+						bor[i + j*40] = 0;
 						
 					}
 				
@@ -315,12 +348,12 @@ public class AnalysisManager implements Runnable {
 		for(int i = 0; i < 1600; i++)
 		{
 			
-			if(Bor[i] == 0)
+			if(bor[i] == 0)
 			{
 				MainManager.logMessage("#AnalysisManager: Cell " + i + " is unallocated." );
 			}
 	
-			content += Bor[i] + " ";
+			content += bor[i] + " ";
 			
 		}
 			
@@ -346,39 +379,38 @@ public class AnalysisManager implements Runnable {
 		
 	}
 	
-	public int[] findBoroughCells(int borough)
+	public int[] findBoroughCells(int boroughNum)
 	{
 	
 		int[] temp = new int[1600];
-		int Num = 0;
+		int num = 0;
 		
 		for(int i = 0; i < 1600; i++)
 		{
 			
-			if(Borough[i] == borough)
+			if(borough[i] == boroughNum)
 			{
 				
-				temp[Num] = i;
-				Num++;
+				temp[num] = i;
+				num++;
 				
 			}
 			
 		}
 		
-		int[] Return = new int[Num+1];
-		for (int i = 0; i <= Num; i++)	{ Return[i] = temp[i];	}
+		int[] Return = new int[num+1];
+		for (int i = 0; i <= num; i++)	{ Return[i] = temp[i];	}
 		return Return;
 		
 	}
 	
 	//Function will be called, to add a tweet.
 	
-	public double[] getTweetArray()
+	public void setTweets()
 	{
 		
 		ArrayList<String> Tweets = MainManager.getTwitterManager().getTweets();
 		String[] PlaceNames = MainManager.getDataManager().getBoroughNames();
-		double[] Return = new double[1600];
 		
 		for(int k = 0; k < Tweets.size(); k++)
 		{
@@ -401,7 +433,7 @@ public class AnalysisManager implements Runnable {
 						for(int j = 0; j < Cells.length; j++)	
 						{
 						
-							Return[Cells[j]] += (TWITSCALAR*Cells.length);
+							ill[Cells[j]] += (TWITSCALAR*Cells.length);
 						
 						}
 						
@@ -430,7 +462,7 @@ public class AnalysisManager implements Runnable {
 					for(int j = 0; j < 20; j++)
 					{
 						
-						Return[20+i*40+j] += (TWITSCALAR/800);
+						ill[20+i*40+j] += (TWITSCALAR/800);
 						
 					}
 					
@@ -449,7 +481,7 @@ public class AnalysisManager implements Runnable {
 					for(int j = 0; j < 20; j++)
 					{
 						
-						Return[i*40+j] += (TWITSCALAR/800);
+						ill[i*40+j] += (TWITSCALAR/800);
 						
 					}
 					
@@ -468,7 +500,7 @@ public class AnalysisManager implements Runnable {
 					for(int j = 0; j < 40; j++)
 					{
 						
-						Return[i*40+j] += (TWITSCALAR/800);
+						ill[i*40+j] += (TWITSCALAR/800);
 						
 					}
 					
@@ -487,7 +519,7 @@ public class AnalysisManager implements Runnable {
 					for(int j = 0; j < 40; j++)
 					{
 						
-						Return[800 + i*40+j] += (TWITSCALAR/800);
+						ill[800 + i*40+j] += (TWITSCALAR/800);
 						
 					}
 					
@@ -500,69 +532,67 @@ public class AnalysisManager implements Runnable {
 			for(int i = 0; i < 1600; i++)
 			{
 				
-				Return[i] += (TWITSCALAR/1600);
+				ill[i] += (TWITSCALAR/1600);
 				
 			}
 			
 		}
 		
-		return Return;
-		
 	}
 	
 	//Function will be called with train travel data.
 	
-	public void movePeople(double Y, double X, double Num)
+	public void movePeople(float y, float x, float num, float averageIll)
 	{
 	
-		int Pos = cordConv(Y, X);
-		double IllMove = Num*getAverageIll()/9;
+		int pos = cordConv(y, x);
+		float illMove = num*averageIll/9;
 		
-		if (Pos > -1)
+		if (pos > -1)
 		{
 			
 			for(int i = -1; i < 2; i++)
 			{
 				
-				int a = cordConv(Y + (i*0.01), X + 0.02);
+				int a = cordConv((float) (y + (i*0.01)), (float) (x + 0.02));
 				
 				if(a > -1)
 				{
 					
-					Pop[a] += ((int)Num/9);
-					if(Pop[a] < 0)
-						Pop[a] = 0;
-					Ill[a] += (IllMove);
-					if(Ill[a] < 0)
-						Ill[a] = 0;
+					pop[a] += ((int)num/9);
+					if(pop[a] < 0)
+						pop[a] = 0;
+					ill[a] += (illMove);
+					if(ill[a] < 0)
+						ill[a] = 0;
 					
 				}
 				
-				int b = cordConv(Y + (i*0.01), X);
+				int b = cordConv((float) (y + (i*0.01)), x);
 				
 				if(b > -1)
 				{
 					
-					Pop[b] += ((int)Num/9);
-					if(Pop[b] < 0)
-						Pop[b] = 0;
-					Ill[b] += (IllMove);
-					if(Ill[b] < 0)
-						Ill[b] = 0;
+					pop[b] += ((int)num/9);
+					if(pop[b] < 0)
+						pop[b] = 0;
+					ill[b] += (illMove);
+					if(ill[b] < 0)
+						ill[b] = 0;
 					
 				}
 				
-				int c = cordConv(Y + (i*0.01), X - 0.02);
+				int c = cordConv((float) (y + (i*0.01)),(float) (x - 0.02));
 				
 				if(c > -1)
 				{
 					
-					Pop[c] += ((int)Num/9);
-					if(Pop[c] < 0)
-						Pop[c] = 0;
-					Ill[c] += (IllMove);
-					if(Ill[c] < 0)
-						Ill[c] = 0;
+					pop[c] += ((int)num/9);
+					if(pop[c] < 0)
+						pop[c] = 0;
+					ill[c] += (illMove);
+					if(ill[c] < 0)
+						ill[c] = 0;
 					
 				}
 				
@@ -577,29 +607,221 @@ public class AnalysisManager implements Runnable {
 		
 	}
 
+	public float[] prediction(float[] previousAverage, Calendar currentDate, byte borough)
+	{
+		
+		float currentMinError = 999999;
+		float[] currentEstimate = new float[2];
+		
+		for(int i = 0; i < 9; i++)
+		{
+			
+			currentDate.add(Calendar.YEAR, -1);
+			
+			float error = 0;
+			try
+			{
+				float scalar = previousAverage[0]/MainManager.getDataManager().getGoogleInsights(currentDate);
+				
+				for(int j = 0; j < 4; j++)
+				{
+					
+					currentDate.add(Calendar.WEEK_OF_YEAR, -1);
+					error += previousAverage[j+1] - MainManager.getDataManager().getGoogleInsights(currentDate)*scalar;
+					
+				}
+				
+				currentDate.add(Calendar.WEEK_OF_YEAR, 4);
+				
+				if(error < currentMinError)
+				{
+					
+					currentMinError = error;
+					currentDate.add(Calendar.WEEK_OF_YEAR, 1);
+					currentEstimate[0] = MainManager.getDataManager().getGoogleInsights(currentDate)*scalar;
+					currentDate.add(Calendar.WEEK_OF_YEAR, 1);
+					currentEstimate[1] = MainManager.getDataManager().getGoogleInsights(currentDate)*scalar;
+					currentDate.add(Calendar.WEEK_OF_YEAR, -2);
+					
+				}
+			} catch (Exception e)
+			{
+				continue;
+			}
+			
+		}
+			
+		return currentEstimate;
+		
+	}
+	
+	public void recordData(float[] data)
+	{
+		
+		String content = new String();
+		
+		for (int i = 0; i < 1600; i++)
+		{
+			
+			content += data[i] + " ";
+			
+		}
+		
+		
+		
+		try{
+		
+			BufferedWriter tempBW = new BufferedWriter(new FileWriter(tempStore.getAbsoluteFile(), true));
+			tempBW.write(content);
+			tempBW.close();
+			
+			
+		} catch (Exception e)
+		{
+			
+			MainManager.logMessage("#AnalysisManager: Failed to save current itteration of model.");
+			
+		}
+		
+	}
+	
+	public void takeAverageAndSave()
+	{
+		
+		float[] average = new float[1600];
+		
+		try 
+		{
+
+			BufferedReader br = new BufferedReader(new FileReader(tempStore.getAbsoluteFile()));
+			String Temp1 = br.readLine();
+			br.close();
+			String[] Temp2 = Temp1.split(" ");
+			int num = (int) Temp2.length/1600;
+			
+			for(int i = 0; i < num; i++)
+			{
+				
+				for(int j = 0; j < 1600; j++)
+				{
+					
+					average[j] += Float.valueOf(Temp2[j + i*1600])/num;
+					
+				}
+				
+			}
+			
+			tempStore.delete();
+			tempStore.createNewFile();
+ 
+		} 
+		catch (Exception e) 
+		{
+			
+			MainManager.logMessage("#AnalysisManager: Could not read ./res/TempData.txt, recommend shut down.");
+		
+		}
+		
+		String content = new String();
+		
+		for (int i = 0; i < 1600; i++)
+		{
+			
+			if(i != 1599)
+				content += " ";
+			else
+				content += " - ";
+			
+		}
+		
+		
+		try{
+		
+			BufferedWriter currentBW = new BufferedWriter(new FileWriter(currentStore.getAbsoluteFile(), true));
+			currentBW.write(content);
+			currentBW.close();
+			
+			
+		} catch (Exception e)
+		{
+			
+			MainManager.logMessage("#AnalysisManager: Failed to save current week average of model.");
+			
+		}
+		
+	}
+	
+	public float[] getPreviousData(int cell)
+	{
+		
+		float[] pastData = new float[5];
+		
+		try 
+		{
+
+			BufferedReader br = new BufferedReader(new FileReader(currentStore.getAbsoluteFile()));
+			String Temp1 = br.readLine();
+			br.close();
+			String[] Temp2 = Temp1.split(" - ");
+			int length = Temp2.length;
+
+			for(int i = 0; i < 5; i++)
+			{
+				
+				String[] Temp3 = Temp2[length - i].split(" ");
+				pastData[i] = Float.valueOf(Temp3[cell]);
+				
+			}
+ 
+		} 
+		catch (Exception e) 
+		{
+			
+			MainManager.logMessage("#AnalysisManager: Could not read ./res/CurrentData.txt, recommend shut down.");
+		
+		}
+		
+		return pastData;
+		
+	}
+	
 	public void addTransport(Calendar date)
 	{
 		int Day = date.get(Calendar.DAY_OF_WEEK);
 		int MinRep = (int)(date.get(Calendar.MINUTE)/15);
 		int HourRep = date.get(Calendar.HOUR) - 2;
-		int[] TrainStations = MainManager.getDataManager().getTrainStations();
-		
+		float average = getAverageIll();
 		
 		if(((Day == 0) && (HourRep >= 0)) || ((Day == 1) && (HourRep < 0)))
 		{
 			
-			int[][] TravelDataOut = MainManager.getDataManager().getSunTravelOutData();
-			int[][] TravelDataIn = MainManager.getDataManager().getSunTravelInData();
-			double Average = getAverageIll();
+			MainManager.getDataManager().loadStationTravel("Out", "Sun");
 			
 			for (int i = 0; i < 268; i++) 
 			{
 				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				
 				for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
 				{
 					
-					movePeople(TrainStations[i*2], TrainStations[i*2+1], TravelDataIn[i][j]);
-					movePeople(TrainStations[i*2], TrainStations[i*2+1], -TravelDataOut[i][j]);
+					movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+					
+				}
+				
+			}
+			
+			MainManager.getDataManager().loadStationTravel("In", "Sun");
+			
+			for (int i = 0; i < 268; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				
+				for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
+				{
+					
+					movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
 					
 				}
 				
@@ -608,18 +830,33 @@ public class AnalysisManager implements Runnable {
 		}else if(((Day == 7) && (HourRep >= 0)) || ((Day == 0) && (HourRep < 0)))
 		{
 			
-			int[][] TravelDataOut = MainManager.getDataManager().getSatTravelOutData();
-			int[][] TravelDataIn = MainManager.getDataManager().getSatTravelInData();
-			double Average = getAverageIll();
+			MainManager.getDataManager().loadStationTravel("Out", "Sat");
 			
 			for (int i = 0; i < 268; i++) 
 			{
 				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				
 				for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
 				{
 					
-					movePeople(TrainStations[i*2], TrainStations[i*2+1], TravelDataIn[i][j]);
-					movePeople(TrainStations[i*2], TrainStations[i*2+1], -TravelDataOut[i][j]);
+					movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+					
+				}
+				
+			}
+			
+			MainManager.getDataManager().loadStationTravel("In", "Sat");
+			
+			for (int i = 0; i < 268; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				
+				for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
+				{
+					
+					movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
 					
 				}
 				
@@ -628,18 +865,33 @@ public class AnalysisManager implements Runnable {
 		} else
 		{
 			
-			int[][] TravelDataOut = MainManager.getDataManager().getWeekTravelOutData();
-			int[][] TravelDataIn = MainManager.getDataManager().getWeekTravelInData();
-			double Average = getAverageIll();
+			MainManager.getDataManager().loadStationTravel("Out", "Week");
 			
 			for (int i = 0; i < 268; i++) 
 			{
 				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				
 				for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
 				{
 					
-					movePeople(TrainStations[i*2], TrainStations[i*2+1], TravelDataIn[i][j]);
-					movePeople(TrainStations[i*2], TrainStations[i*2+1], -TravelDataOut[i][j]);
+					movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+					
+				}
+				
+			}
+			
+			MainManager.getDataManager().loadStationTravel("In", "Week");
+			
+			for (int i = 0; i < 268; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				
+				for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
+				{
+					
+					movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
 					
 				}
 				
@@ -652,32 +904,70 @@ public class AnalysisManager implements Runnable {
 	public void update()
 	{
 		
-		double[][] DataToBeSent = new double[14*24*4][1600];
+		float[][] DataToBeSent = new float[14*24*4][1600];
 		
 	    Calendar CurrentDate = Calendar.getInstance();
 	    CurrentDate.setTime(new Date());
 		
-		Ill = getTweetArray();
+		setTweets();
 		addTransport(CurrentDate);
 		
-		DataToBeSent[0] = Ill;
+		DataToBeSent[0] = ill;
+		
+		if((!updated) && (CurrentDate.get(Calendar.DAY_OF_WEEK) == DAY_OF_UPDATE))
+		{
+			
+			takeAverageAndSave();
+			updated = true;
+			
+		}
+		
+		if( (CurrentDate.get(Calendar.DAY_OF_WEEK) != DAY_OF_UPDATE) && (updated))
+		{
+			
+			updated = false;
+			
+		}
+		
+		recordData(ill);
 		
 		resetPop();
 		
-		double[][] PredictedState = Prediction.getPredictedState();
+		float[][] PredictedState = new float[14*24*4][1600];
+		
+		for(int i = 0; i < 1600; i++)
+		{
+			
+			float[] predictedData = prediction(getPreviousData(i), CurrentDate, borough[i]);
+			
+			for(int j = 0; j < 7*24*4; j++)
+			{
+				
+				PredictedState[j][i] = ill[i]*((7*24*4-j)/7*24*4) + predictedData[0]*((j)/7*24*4);
+				
+			}
+			
+			for(int j = 0; j < 7*24*4; j++)
+			{
+				
+				PredictedState[7*24*4 + j][i] = predictedData[0]*((7*24*4-j)/7*24*4) + predictedData[1]*((j)/7*24*4);
+				
+			}
+			
+		}
 		
 		for(int i = 1; i < 14*24*4; i++)
 		{
 			
 			CurrentDate.add(Calendar.MINUTE, 15);
-			Ill = PredictedState[i];
+			ill = PredictedState[i];
 			addTransport(CurrentDate);
-			DataToBeSent[i] = Ill;
+			DataToBeSent[i] = ill;
 			resetPop();
 			
 		}
 		
-		ToBeSent.Data = DataToBeSent;
+		toBeSent.data = DataToBeSent;
 		
 	}
 	

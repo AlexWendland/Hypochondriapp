@@ -49,13 +49,12 @@ public class DataManager
 	{
 		
 		String[] BoroughNames = new String[33];
-		BufferedReader br = null;
 		
 		try 
 		{
  
 			String Temp;
-			br = new BufferedReader(new FileReader("./res/BoroughKey.txt"));
+			BufferedReader br = new BufferedReader(new FileReader("./res/BoroughKey.txt"));
 			Temp = br.readLine();
 			br.close();
 			BoroughNames = Temp.split(", ");
@@ -103,10 +102,10 @@ public class DataManager
 		
 	}
 	
-	public int[] getBoroughPlaces()
+	public byte[] getBoroughPlaces()
 	{
 		
-		int[] BoroughPlaces = new int[1600];
+		byte[] BoroughPlaces = new byte[1600];
 		BufferedReader br = null;
 		
 		try 
@@ -121,7 +120,7 @@ public class DataManager
 			for(int i = 0; i < 1600; i++)
 			{
 				
-				BoroughPlaces[i] =  Integer.valueOf(tokens[i]);
+				BoroughPlaces[i] =  Byte.valueOf(tokens[i]);
 					
 			}
  
@@ -288,20 +287,6 @@ public class DataManager
 		}
 		
 		return returnVal;
-	}
-	
-	/*
-	 
-	Will put station i's x, y coordinate in TrainStations[i*2], TrainStations[i*2 + 1].
-	 
-	*/
-	
-	public int[] getTrainStations()
-	{
-		int[] TrainStations = new int[268*2];
-		
-		return TrainStations;
-		
 	}
 	
 	public float[] getStationLocation(String name)
