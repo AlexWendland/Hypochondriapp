@@ -21,6 +21,7 @@ public class MainManager
 	private static TravelManager travelManager;
 	private static AppNetworkManager appNetworkManager;
 	private static DataManager dataManager;
+	private static AnalysisManager analysisManager;
 	
 	private static Thread[] managerThreads;
 	
@@ -34,15 +35,18 @@ public class MainManager
 		timeFormat = new SimpleDateFormat("dd/MM/yy HH:mm:ss.SSS - ");
 		
 		twitterManager = new TwitterManager();
+		appNetworkManager = new AppNetworkManager();
+		analysisManager = new AnalysisManager();
+		
 		googleManager = new GoogleManager();
 		travelManager = new TravelManager();
-		appNetworkManager = new AppNetworkManager();
 		dataManager = new DataManager();
 		
 		managerThreads = new Thread[3];
 		
 		managerThreads[0] = new Thread(twitterManager);
 		managerThreads[1] = new Thread(appNetworkManager);
+		managerThreads[2] = new Thread(analysisManager);
 	}
 	
 	public static void cleanup()
@@ -120,18 +124,33 @@ public class MainManager
 				else
 				{
 					managerThreads[0].start();
+					logMessage("#MainManager: TwitterManager thread started");
 				}
 			}
 			
 			else if(command.contains("appnetworkmanager"))
 			{
-				if(managerThreads[2].isAlive())
+				if(managerThreads[1].isAlive())
 				{
 					logMessage("#MainManager: Cannot start AppNetworkManager as it is already alive");
 				}
 				else
 				{
+					managerThreads[1].start();
+					logMessage("#MainManager: AppNetworkManager thread started");
+				}
+			}
+			
+			else if(command.contains("analysismanager"))
+			{
+				if(managerThreads[2].isAlive())
+				{
+					logMessage("#MainManager: Cannot start AnalysisManager as it is already alive");
+				}
+				else
+				{
 					managerThreads[2].start();
+					logMessage("#MainManager: AnalysisManager thread started");
 				}
 			}
 			
@@ -160,12 +179,14 @@ public class MainManager
 				
 				Thread google = new Thread(googleManager);
 				google.start();
+				logMessage("#MainManager: GoogleManager thread updating");
 			}
 			
 			else if(command.contains("travelmanager"))
 			{
 				Thread travel = new Thread(travelManager);
 				travel.start();
+				logMessage("#MainManager: TravelManager thread updating");
 			}
 			
 			else
@@ -189,6 +210,7 @@ public class MainManager
 	
 	private static void shutdown()
 	{
+		logMessage("#MainManager: Shutting down");
 		shutdown = true;
 		
 		for(int i = 0; i < managerThreads.length; i++)
@@ -201,7 +223,8 @@ public class MainManager
 	public static GoogleManager getGoogleManager() { return googleManager; }
 	public static AppNetworkManager getAppNetworkManager() { return appNetworkManager; }
 	public static DataManager getDataManager() { return dataManager; }
+	public static AnalysisManager getAnalysisManager() { return analysisManager; }
 	
 	public static boolean isShutdown() { return shutdown; }
-
+	
 }
