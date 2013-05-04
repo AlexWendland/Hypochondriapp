@@ -8,29 +8,12 @@ import java.net.SocketTimeoutException;
 
 public class AppNetworkManager implements Runnable
 {
-	public static final int PORT = 2002;
+	public static final int PORT = 59999;
 	public static final int NUM_THREADS = 4;
 	
 	ServerSocket socket;
 	
-	Object currentDataModel = new String("Test Data\n" +
-											"########################################\n" + 
-											"########################################\n" + 
-											"########################################\n" + 
-											"########################################\n" + 
-											"########################################\n" + 
-											"########################################\n" + 
-											"########################################\n" + 
-											"########################################\n" + 
-											"########################################\n" + 
-											"########################################\n" + 
-											"########################################\n" + 
-											"########################################\n" + 
-											"########################################\n" + 
-											"########################################\n" + 
-											"########################################\n" + 
-											"########################################\n" + 
-											"########################################\n" );
+	AppDataPacket currentDataModel = null;
 											
 	
 	public AppNetworkManager()
@@ -39,7 +22,7 @@ public class AppNetworkManager implements Runnable
 		//Multithread code
 	}
 	
-	public void updateModel(Object newModel)
+	public void updateModel(AppDataPacket newModel)
 	{
 		currentDataModel = newModel;
 	}
@@ -54,6 +37,7 @@ public class AppNetworkManager implements Runnable
 		catch(IOException e)
 		{
 			MainManager.logMessage("#AppNetworkManager: Could not create server socket, exiting...");
+			e.printStackTrace();
 			return;
 		}
 		
