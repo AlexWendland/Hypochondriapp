@@ -17,31 +17,38 @@ public class AnalysisManager implements Runnable {
 	private int[] setPop;
 	private float[] ill;
 	private byte[] borough;
-	private SentData toBeSent = new SentData();
+	private AppDataPacket toBeSent = new AppDataPacket();
 	private boolean updated;
+	private boolean newData;
 	File tempStore = new File("./res/tempStore.txt");
-	File currentStore = new File("./res/currnetStore.txt");
-	
-	/*
-	
-	FileWriter tempFW = new FileWriter(tempStore.getAbsoluteFile());
-	BufferedWriter tempBW = new BufferedWriter(tempFW);
-	FileWriter currentFW = new FileWriter(currentStore.getAbsoluteFile());
-	BufferedWriter currentBW = new BufferedWriter(currentFW);
-	
-	*/
-			
-	public static final int TWITSCALAR = 30;
+	File currentStore = new File("./res/currentStore.txt");
+	private static final long UPDATE_TIME = 1200000; //Time between updates
+	public static final int TWITSCALAR = 1600;
 	public static final int DAY_OF_UPDATE = 0;
+	
+	// Initiates, sets currently model and default model.
+	
+	private int min(int a, int b)
+	{
+		
+		if(a < b)
+			return a;
+		else
+			return b;
+		
+	}
 	
 	public void init() 
 	{
 		
 		int[] popDen = MainManager.getDataManager().getBoroughDensities();
 		borough = MainManager.getDataManager().getBoroughPlaces();	
-		for(int i = 0; i < 1600; i++)	{ setPop[i] = popDen[borough[i]];	}
+		setPop = new int[1600];
+		ill = new float[1600];
+		for(int i = 0; i < 1600; i++)	{ setPop[i] = popDen[borough[i] - 1];	}
 		pop = setPop;
 		updated = true;
+		newData = false;
 		
 		try
 		{
@@ -125,8 +132,6 @@ public class AnalysisManager implements Runnable {
 		}
 		
 	}
-	
-	public SentData getData()	{ return toBeSent;	}
 	
 	public void setBoroughs()
 	{
@@ -422,7 +427,7 @@ public class AnalysisManager implements Runnable {
 			try
 			{
 				
-				for(int i = 0; i < 33; i++)
+				for(int i = 0; i < PlaceNames.length; i++)
 				{
 				
 					if(Place.contains(PlaceNames[i]))
@@ -433,7 +438,7 @@ public class AnalysisManager implements Runnable {
 						for(int j = 0; j < Cells.length; j++)	
 						{
 						
-							ill[Cells[j]] += (TWITSCALAR*Cells.length);
+							ill[Cells[j]] += (TWITSCALAR/Cells.length);
 						
 						}
 						
@@ -519,7 +524,7 @@ public class AnalysisManager implements Runnable {
 					for(int j = 0; j < 40; j++)
 					{
 						
-						ill[800 + i*40+j] += (TWITSCALAR/800);
+						ill[800 + i*40 + j] += (TWITSCALAR/800);
 						
 					}
 					
@@ -542,11 +547,11 @@ public class AnalysisManager implements Runnable {
 	
 	//Function will be called with train travel data.
 	
-	public void movePeople(float y, float x, float num, float averageIll)
+	public void movePeople(float x, float y, float num, float averageIll)
 	{
 	
 		int pos = cordConv(y, x);
-		float illMove = num*averageIll/9;
+		float illMove = num*averageIll/12;
 		
 		if (pos > -1)
 		{
@@ -559,7 +564,7 @@ public class AnalysisManager implements Runnable {
 				if(a > -1)
 				{
 					
-					pop[a] += ((int)num/9);
+					pop[a] += ((int)num/12);
 					if(pop[a] < 0)
 						pop[a] = 0;
 					ill[a] += (illMove);
@@ -572,11 +577,16 @@ public class AnalysisManager implements Runnable {
 				
 				if(b > -1)
 				{
-					
-					pop[b] += ((int)num/9);
+					if (i != 0)
+						pop[b] += ((int)num/12);
+					else
+						pop[b] += ((int)num/3);
 					if(pop[b] < 0)
 						pop[b] = 0;
-					ill[b] += (illMove);
+					if(i != 0)
+						ill[b] += (illMove);
+					else
+						ill[b] += (illMove)*4;
 					if(ill[b] < 0)
 						ill[b] = 0;
 					
@@ -718,7 +728,7 @@ public class AnalysisManager implements Runnable {
 		catch (Exception e) 
 		{
 			
-			MainManager.logMessage("#AnalysisManager: Could not read ./res/TempData.txt, recommend shut down.");
+			MainManager.logMessage("#AnalysisManager: Could not read ./res/tempStore.txt, recommend shut down.");
 		
 		}
 		
@@ -762,22 +772,27 @@ public class AnalysisManager implements Runnable {
 			BufferedReader br = new BufferedReader(new FileReader(currentStore.getAbsoluteFile()));
 			String Temp1 = br.readLine();
 			br.close();
-			String[] Temp2 = Temp1.split(" - ");
-			int length = Temp2.length;
-
-			for(int i = 0; i < 5; i++)
+			
+			if ((Temp1 != null) && (Temp1.length() != 0))
 			{
-				
-				String[] Temp3 = Temp2[length - i].split(" ");
-				pastData[i] = Float.valueOf(Temp3[cell]);
+				String[] Temp2 = Temp1.split(" - ");
+				int length = Temp2.length;
+				for(int i = 0; i < min(5, length); i++)
+				{
+						
+					String[] Temp3 = Temp2[length - i].split(" ");
+					if(Temp3.length > 1599)
+					pastData[i] = Float.valueOf(Temp3[cell]);
+
+				}
 				
 			}
- 
+			
 		} 
 		catch (Exception e) 
 		{
 			
-			MainManager.logMessage("#AnalysisManager: Could not read ./res/CurrentData.txt, recommend shut down.");
+			MainManager.logMessage("#AnalysisManager: Could not read ./res/currentStore.txt, recommend shut down.");
 		
 		}
 		
@@ -795,33 +810,43 @@ public class AnalysisManager implements Runnable {
 		if(((Day == 0) && (HourRep >= 0)) || ((Day == 1) && (HourRep < 0)))
 		{
 			
-			MainManager.getDataManager().loadStationTravel("Out", "Sun");
+			MainManager.getDataManager().loadStationTravel(DataManager.EXIT, DataManager.SUN);
 			
-			for (int i = 0; i < 268; i++) 
+			for (int i = 0; i < 269; i++) 
 			{
 				
 				StationInfo currentStation = MainManager.getDataManager().getNextStation();
 				
-				for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
+				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
 				{
-					
-					movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+				
+					for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
+					{
+						
+						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+						
+					}
 					
 				}
 				
 			}
 			
-			MainManager.getDataManager().loadStationTravel("In", "Sun");
+			MainManager.getDataManager().loadStationTravel(DataManager.ENTER, DataManager.SUN);
 			
-			for (int i = 0; i < 268; i++) 
+			for (int i = 0; i < 269; i++) 
 			{
 				
 				StationInfo currentStation = MainManager.getDataManager().getNextStation();
 				
-				for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
+				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
 				{
-					
-					movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+				
+					for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
+					{
+						
+						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+						
+					}
 					
 				}
 				
@@ -830,33 +855,43 @@ public class AnalysisManager implements Runnable {
 		}else if(((Day == 7) && (HourRep >= 0)) || ((Day == 0) && (HourRep < 0)))
 		{
 			
-			MainManager.getDataManager().loadStationTravel("Out", "Sat");
+			MainManager.getDataManager().loadStationTravel(DataManager.EXIT, DataManager.SAT);
 			
-			for (int i = 0; i < 268; i++) 
+			for (int i = 0; i < 269; i++) 
 			{
 				
 				StationInfo currentStation = MainManager.getDataManager().getNextStation();
 				
-				for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
+				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
 				{
-					
-					movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+				
+					for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
+					{
+						
+						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+						
+					}
 					
 				}
 				
 			}
 			
-			MainManager.getDataManager().loadStationTravel("In", "Sat");
+			MainManager.getDataManager().loadStationTravel(DataManager.ENTER, DataManager.SAT);
 			
-			for (int i = 0; i < 268; i++) 
+			for (int i = 0; i < 269; i++) 
 			{
 				
 				StationInfo currentStation = MainManager.getDataManager().getNextStation();
 				
-				for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
+				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
 				{
-					
-					movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+				
+					for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
+					{
+						
+						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+						
+					}
 					
 				}
 				
@@ -865,33 +900,43 @@ public class AnalysisManager implements Runnable {
 		} else
 		{
 			
-			MainManager.getDataManager().loadStationTravel("Out", "Week");
+			MainManager.getDataManager().loadStationTravel(DataManager.EXIT, DataManager.WEEK);
 			
-			for (int i = 0; i < 268; i++) 
+			for (int i = 0; i < 269; i++) 
 			{
 				
 				StationInfo currentStation = MainManager.getDataManager().getNextStation();
 				
-				for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
+				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
 				{
-					
-					movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
-					
-				}
 				
+					for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
+					{
+						
+						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+						
+					}
+				
+				}
+					
 			}
 			
-			MainManager.getDataManager().loadStationTravel("In", "Week");
+			MainManager.getDataManager().loadStationTravel(DataManager.ENTER, DataManager.WEEK);
 			
-			for (int i = 0; i < 268; i++) 
+			for (int i = 0; i < 269; i++) 
 			{
 				
 				StationInfo currentStation = MainManager.getDataManager().getNextStation();
 				
-				for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
+				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
 				{
-					
-					movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+				
+					for(int j = 0; j < 4*(HourRep%24) + MinRep; j++)
+					{
+						
+						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+						
+					}
 					
 				}
 				
@@ -901,20 +946,43 @@ public class AnalysisManager implements Runnable {
 		
 	}
 
+	public AppDataPacket getAppDataPacket()
+	{
+		
+		return toBeSent;
+		
+	}
+	
+	public boolean isNewData()
+	{
+	
+		if(newData)
+		{
+			
+			newData = false;
+			return true;
+			
+		} else
+			return false;
+		
+	}
+	
 	public void update()
 	{
 		
-		float[][] DataToBeSent = new float[14*24*4][1600];
+		ill = new float[1600];
 		
-	    Calendar CurrentDate = Calendar.getInstance();
-	    CurrentDate.setTime(new Date());
+		float[][] dataToBeSent = new float[14*24*4][1600];
+		
+	    Calendar currentDate = Calendar.getInstance();
+	    currentDate.setTime(new Date());
 		
 		setTweets();
-		addTransport(CurrentDate);
+		addTransport(currentDate);
 		
-		DataToBeSent[0] = ill;
+		dataToBeSent[0] = ill;
 		
-		if((!updated) && (CurrentDate.get(Calendar.DAY_OF_WEEK) == DAY_OF_UPDATE))
+		if((!updated) && (currentDate.get(Calendar.DAY_OF_WEEK) == DAY_OF_UPDATE))
 		{
 			
 			takeAverageAndSave();
@@ -922,7 +990,7 @@ public class AnalysisManager implements Runnable {
 			
 		}
 		
-		if( (CurrentDate.get(Calendar.DAY_OF_WEEK) != DAY_OF_UPDATE) && (updated))
+		if( (currentDate.get(Calendar.DAY_OF_WEEK) != DAY_OF_UPDATE) && (updated))
 		{
 			
 			updated = false;
@@ -933,41 +1001,136 @@ public class AnalysisManager implements Runnable {
 		
 		resetPop();
 		
-		float[][] PredictedState = new float[14*24*4][1600];
+		float[][] PredictedState = new float[24*8+7][1600];
 		
 		for(int i = 0; i < 1600; i++)
 		{
 			
-			float[] predictedData = prediction(getPreviousData(i), CurrentDate, borough[i]);
+			currentDate = Calendar.getInstance();
+		    currentDate.setTime(new Date());
 			
-			for(int j = 0; j < 7*24*4; j++)
+			float[] predictedData = prediction(getPreviousData(i), currentDate, borough[i]);
+			
+			for(int j = 0; j < 24*4; j++)
 			{
 				
 				PredictedState[j][i] = ill[i]*((7*24*4-j)/7*24*4) + predictedData[0]*((j)/7*24*4);
 				
 			}
 			
-			for(int j = 0; j < 7*24*4; j++)
+			for(int j = 0; j < 24*2; j++)
 			{
 				
-				PredictedState[7*24*4 + j][i] = predictedData[0]*((7*24*4-j)/7*24*4) + predictedData[1]*((j)/7*24*4);
+				PredictedState[24*4 + j][i] = ill[i]*((7*24*2-(24*2 + j))/7*24*2) + predictedData[0]*((24*2 + j)/7*24*2);
+				
+			}
+			
+			for(int j = 0; j < 24; j++)
+			{
+				
+				PredictedState[24*6 + j][i] = ill[i]*((7*24-(24*2 + j))/7*24) + predictedData[0]*((24*2 + j)/7*24);
+				
+			}
+			
+			for(int j = 0; j < 12; j++)
+			{
+				
+				PredictedState[24*7 + j][i] = ill[i]*((7*24-(24*3 + 2*j))/7*24) + predictedData[0]*((24*3 + 2*j)/7*24);
+				
+			}
+			
+			for(int j = 0; j < 6; j++)
+			{
+				
+				PredictedState[24*7 + 12 + j][i] = ill[i]*((7*24-(24*4 + 4*j))/7*24) + predictedData[0]*((24*4 + 4*j)/7*24);
+				
+			}
+			
+			for(int j = 0; j < 4; j++)
+			{
+				
+				PredictedState[24*7 + 18 + j][i] = ill[i]*((7*24-(24*5 + 6*j))/7*24) + predictedData[0]*((24*5 + 6*j)/7*24);
+				
+			}
+			
+			for(int j = 0; j < 2; j++)
+			{
+				
+				PredictedState[24*7 + 22 + j][i] = ill[i]*((7*24-(24*6 + 12*j))/7*24) + predictedData[0]*((24*6 + 12*j)/7*24);
+				
+			}
+			
+			for(int j = 0; j < 7; j++)
+			{
+				
+				PredictedState[24*8 + j][i] = predictedData[0]*((7-j)/7) + predictedData[1]*(j/7);
 				
 			}
 			
 		}
 		
-		for(int i = 1; i < 14*24*4; i++)
+		currentDate = Calendar.getInstance();
+	    currentDate.setTime(new Date());
+		
+		for(int i = 1; i < 8*24 + 7; i++)
 		{
 			
-			CurrentDate.add(Calendar.MINUTE, 15);
+			if(i < 24*4)
+				currentDate.add(Calendar.MINUTE, 15);
+			else if (i < 24*6)
+				currentDate.add(Calendar.MINUTE, 30);
+			else if (i < 24*7)
+				currentDate.add(Calendar.HOUR, 1);
+			else if (i < 24*7 + 12)
+				currentDate.add(Calendar.HOUR, 2);
+			else if (i < 27*7 + 18)
+				currentDate.add(Calendar.HOUR, 4);
+			else if (i < 27*7 + 22)
+				currentDate.add(Calendar.HOUR, 6);
+			else if (i < 24*8)
+				currentDate.add(Calendar.HOUR, 12);
+			else
+				currentDate.add(Calendar.DAY_OF_YEAR, 1);
+			
 			ill = PredictedState[i];
-			addTransport(CurrentDate);
-			DataToBeSent[i] = ill;
+			addTransport(currentDate);
+			dataToBeSent[i] = ill;
 			resetPop();
 			
 		}
 		
-		toBeSent.data = DataToBeSent;
+		float[] newScalar = new float[24*8+7];
+		byte[][] newData = new byte[24*8+7][1600];
+		
+		for(int i = 0; i < 24*8 + 7; i++)
+		{
+			
+			float max = 0;
+			
+			for(int j = 0; j < 1600; j++)
+			{
+				
+				if(PredictedState[i][j] > max)
+					max = PredictedState[i][j];
+				
+			}
+			
+			newScalar[i] = max;
+			
+			for(int j = 0; j < 1600; j++)
+			{
+				
+				if(max == 0)
+					newData[i][j] = -128;
+				else
+					newData[i][j] = (byte) ((PredictedState[i][j]*255/max) - 128);
+				
+			}			
+			
+		}
+		
+		toBeSent.data = newData;
+		toBeSent.scalar = newScalar;
 		
 	}
 	
@@ -979,10 +1142,32 @@ public class AnalysisManager implements Runnable {
 		while(!MainManager.isShutdown())
 		{
 			
+			/*
+			
+			synchronized(this){
+			
+				try{ wait(UPDATE_TIME);	} 
+				catch (Exception e) 
+				{ 
+					
+					e.printStackTrace();
+					
+					MainManager.logMessage("#AnalysisManager: System couldn't wait");
+					
+				}
+			}
+			
+			*/
+			
 			if(MainManager.getTwitterManager().isUpdated())
 			{
-			
+				
+				MainManager.logMessage("#AnalysisManager: Starting prediction");
+				
 				update();
+				newData = true;
+				
+				MainManager.logMessage("#AnalysisManager: Prediction ended");
 				
 			}
 							
