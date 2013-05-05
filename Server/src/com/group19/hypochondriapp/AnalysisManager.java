@@ -45,7 +45,12 @@ public class AnalysisManager implements Runnable {
 		borough = MainManager.getDataManager().getBoroughPlaces();	
 		setPop = new int[1600];
 		ill = new float[1600];
-		for(int i = 0; i < 1600; i++)	{ setPop[i] = popDen[borough[i] - 1];	}
+		
+		for(int i = 0; i < 1600; i++)	
+		{ 
+			setPop[i] = popDen[borough[i] - 1];	
+			ill[i] = 0;
+		}
 		pop = setPop;
 		updated = true;
 		newData = false;
@@ -971,6 +976,8 @@ public class AnalysisManager implements Runnable {
 	{
 		
 		ill = new float[1600];
+		
+		for(int i = 0; i < 1600; i++) { ill[i] = 0;	}
 		
 		float[][] dataToBeSent = new float[14*24*4][1600];
 		

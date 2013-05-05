@@ -161,6 +161,31 @@ public class MainManager
 			}
 		}
 		
+		else if(command.startsWith("qs"))
+		{
+			
+			if(managerThreads[0].isAlive())
+			{
+				logMessage("#MainManager: Cannot start TwitterManager as it is already alive");
+			}
+			else
+			{
+				managerThreads[0].start();
+				logMessage("#MainManager: TwitterManager thread started");
+			}
+			
+			if(managerThreads[2].isAlive())
+			{
+				logMessage("#MainManager: Cannot start AnalysisManager as it is already alive");
+			}
+			else
+			{
+				managerThreads[2].start();
+				logMessage("#MainManager: AnalysisManager thread started");
+			}
+			
+		}
+		
 		else if(command.startsWith("update"))
 		{
 			if(command.contains("googlemanager"))

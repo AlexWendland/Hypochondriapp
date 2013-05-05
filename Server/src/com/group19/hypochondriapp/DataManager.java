@@ -88,7 +88,7 @@ public class DataManager
 			br.close();
 			String[] tokens = BoroughPos.split(" ");
 			
-			for(int i = 0; i < 33; i++)	{ PopDen[i] = 259*Integer.valueOf(tokens[i]);	}
+			for(int i = 0; i < tokens.length; i++)	{ PopDen[i] = (int)(259*Double.valueOf(tokens[i]));	}
 	
 		} 
 		catch (Exception e) 
