@@ -136,6 +136,8 @@ public class TwitterManager implements Runnable
 					break;
 				}
 				
+				if(resultList.get(i).getUser() == null) continue;
+				
 				location = resultList.get(i).getUser().getLocation();
 				location = location.toUpperCase();
 				if(!location.contains("LONDON")) continue;
