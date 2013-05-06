@@ -6,11 +6,16 @@ public class AppDataPacket implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 	
-	byte[][] data = new byte[24*4*14][1600];
-	float[] scalar = new float[1600];
+	byte[][] illData = new byte[24*8+7][1600];
+	float[] illScalar = new float[24*8+7];
+	short[][] stationsData = new short[24*8+7][269*2];
+	byte[][] ratioData = new byte[24*8+7][1600];
+	float[] ratioScalar = new float[24*8+7];
 	
 	public AppDataPacket()
 	{
+		
+		
 		
 	}
 }

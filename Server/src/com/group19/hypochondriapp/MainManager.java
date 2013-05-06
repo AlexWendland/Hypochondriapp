@@ -29,6 +29,9 @@ public class MainManager
 	private static ConcurrentLinkedQueue<String> log;
 	private static SimpleDateFormat timeFormat;
 	
+	//Update time for server
+	public static final long UPDATE_TIME = 1200000; //Time between updates
+	
 	public static void init()
 	{
 		log = new ConcurrentLinkedQueue<String>();

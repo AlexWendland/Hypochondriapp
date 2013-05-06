@@ -23,7 +23,6 @@ import twitter4j.conf.ConfigurationBuilder;
 public class TwitterManager implements Runnable
 {
 	private static final long MILLIS_IN_DAY = 86400000;
-	private static final long UPDATE_TIME = 1200000; //Time between updates
 	
 	private Properties twitterProperties; //Data from twitter.properties
 	private Configuration config; //Twitter configuration data
@@ -82,7 +81,7 @@ public class TwitterManager implements Runnable
 			{
 				try
 				{
-					wait(UPDATE_TIME);
+					wait(MainManager.UPDATE_TIME);
 				}
 				catch(InterruptedException e){}
 			}

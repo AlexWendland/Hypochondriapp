@@ -26,10 +26,14 @@ public class DataManager
 	public static final String WEEK = "Week";
 	public static final String SAT = "sat";
 	public static final String SUN = "sun";
-	
-	
 	private TreeMap<String, float[]> stations;
 	private LinkedList<StationInfo> currentStations;
+	
+	//Files for stored data
+	File boroughKey = new File("./res/DataManager/BoroughKey.txt");
+	File boroughDensities = new File("./res/DataManager/BoroughDensities.txt");
+	File boroughPlaces = new File("./res/DataManager/BoroughPlace.txt");
+
 	
 	public DataManager() 
 	{
@@ -43,8 +47,7 @@ public class DataManager
 		loadStations();
 	}
 	
-	
-	
+	//Used to get the BroughNames for Analysis Manager.
 	public String[] getBoroughNames()
 	{
 		
@@ -54,7 +57,7 @@ public class DataManager
 		{
  
 			String Temp;
-			BufferedReader br = new BufferedReader(new FileReader("./res/BoroughKey.txt"));
+			BufferedReader br = new BufferedReader(new FileReader(boroughKey));
 			Temp = br.readLine();
 			br.close();
 			BoroughNames = Temp.split(", ");
@@ -63,7 +66,7 @@ public class DataManager
 		catch (Exception e) 
 		{
 			
-			MainManager.logMessage("#DataManager: Could not read ./res/BoroughKey.txt.");
+			MainManager.logMessage("#DataManager: Could not read ./res/DataAnalysis/BoroughKey.txt.");
 		
 		}
 		
@@ -71,6 +74,7 @@ public class DataManager
 		
 	}
 	
+	//Used to get the Borough Densities for AnalysisManager.
 	public int[] getBoroughDensities()
 	{
 	
@@ -83,7 +87,7 @@ public class DataManager
 		{
 	
 			String BoroughPos;
-			br = new BufferedReader(new FileReader("./res/BoroughDensities.txt"));
+			br = new BufferedReader(new FileReader(boroughDensities));
 			BoroughPos = br.readLine();
 			br.close();
 			String[] tokens = BoroughPos.split(" ");
@@ -94,7 +98,7 @@ public class DataManager
 		catch (Exception e) 
 		{
 			
-			MainManager.logMessage("#DataManager: Could not read ./res/BoroughDensities.txt.");
+			MainManager.logMessage("#DataManager: Could not read ./res/DataManager/BoroughDensities.txt.");
 			
 		}
 		
@@ -102,6 +106,7 @@ public class DataManager
 		
 	}
 	
+	//Used to allocate the cells boroughs for AnalysisManager.
 	public byte[] getBoroughPlaces()
 	{
 		
@@ -112,7 +117,7 @@ public class DataManager
 		{
  
 			String BoroughPos;
-			br = new BufferedReader(new FileReader("./res/BoroughPlace.txt"));
+			br = new BufferedReader(new FileReader(boroughPlaces));
 			BoroughPos = br.readLine();
 			br.close();
 			String[] tokens = BoroughPos.split(" ");
@@ -128,7 +133,7 @@ public class DataManager
 		catch (Exception e) 
 		{
 			
-			MainManager.logMessage("#DataManager: Could not read ./res/BoroughPlace.txt.");
+			MainManager.logMessage("#DataManager: Could not read ./res/DataManager/BoroughPlace.txt.");
 		
 		}
 		
