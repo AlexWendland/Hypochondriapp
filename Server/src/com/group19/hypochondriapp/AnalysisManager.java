@@ -27,7 +27,7 @@ public class AnalysisManager implements Runnable {
 	//Files used and constants.
 	File tempStore = new File("./res/AnalysisManager/tempStore.txt");
 	File currentStore = new File("./res/AnalysisManager/currentStore.txt");
-	public static final int TWITSCALAR = 1600;
+	public static final int TWITSCALAR = 1000;
 	public static final int DAY_OF_UPDATE = 0;
 	
 	//Initiation of the model.
@@ -438,6 +438,8 @@ public class AnalysisManager implements Runnable {
 		
 		float[] average = new float[1600];
 		
+		for(int i = 0; i < 1600; i++)	{ average[i] = 0;	}
+		
 		try 
 		{
 
@@ -466,7 +468,7 @@ public class AnalysisManager implements Runnable {
 		catch (Exception e) 
 		{
 			
-			MainManager.logMessage("#AnalysisManager: Could not read ./res/tempStore.txt, recommend shut down.");
+			MainManager.logMessage("#AnalysisManager: Could not read ./res/Analysis/tempStore.txt, recommend shut down.");
 		
 		}
 		
@@ -474,6 +476,8 @@ public class AnalysisManager implements Runnable {
 		
 		for (int i = 0; i < 1600; i++)
 		{
+			
+			content += average[i]; 
 			
 			if(i != 1599)
 				content += " ";
@@ -519,10 +523,10 @@ public class AnalysisManager implements Runnable {
 				int length = Temp2.length;
 				for(int i = 0; i < Math.min(5, length); i++)
 				{
-						
-					String[] Temp3 = Temp2[length - i].split(" ");
+					String[] Temp3 = Temp2[length - (1+i)].split(" ");
+					
 					if(Temp3.length > 1599)
-					pastData[i] = Float.valueOf(Temp3[cell]);
+						pastData[i] = Float.valueOf(Temp3[cell]);
 
 				}
 				
@@ -1019,7 +1023,7 @@ public class AnalysisManager implements Runnable {
 	}
 	
 	
-	//The runnable.s
+	//The runnable.
 	public void run()
 	{
 		
@@ -1044,16 +1048,25 @@ public class AnalysisManager implements Runnable {
 			}
 			
 			*/
-			
-			if(MainManager.getTwitterManager().isUpdated())
+			try
 			{
 				
-				MainManager.logMessage("#AnalysisManager: Starting prediction");
+				if(MainManager.getTwitterManager().isUpdated())
+				{
+					
+					MainManager.logMessage("#AnalysisManager: Starting prediction");
+					
+					update();
+					newData = true;
+					
+					MainManager.logMessage("#AnalysisManager: Prediction ended");
+					
+				}
 				
-				update();
-				newData = true;
+			} catch (Exception e)
+			{
 				
-				MainManager.logMessage("#AnalysisManager: Prediction ended");
+				MainManager.logMessage("#AnalysisManager: Prediction failed because of " + e.getMessage());
 				
 			}
 							
