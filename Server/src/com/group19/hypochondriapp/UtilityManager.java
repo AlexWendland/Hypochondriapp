@@ -2,7 +2,6 @@ package com.group19.hypochondriapp;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -37,8 +36,6 @@ public class UtilityManager
 	    	   String fileName = ze.getName();
 	           File newFile = new File(outputDir + File.separator + fileName);
 	 
-	            //create all non exists folders
-	            //else you will hit FileNotFoundException for compressed folder
 	            new File(newFile.getParent()).mkdirs();
 	 
 	            FileOutputStream fos = new FileOutputStream(newFile);             

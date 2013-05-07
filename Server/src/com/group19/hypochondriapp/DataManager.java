@@ -2,40 +2,62 @@ package com.group19.hypochondriapp;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.LinkedList;
 import java.util.TreeMap;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class DataManager
 {
-	
+	//To be used with loadStationTravel to specify the info desired
+	public static final String ENTER = "EN11";
+	public static final String EXIT = "EX11";
+	public static final String WEEK = "Week";
+	public static final String SAT = "sat";
+	public static final String SUN = "sun";
 	private TreeMap<String, float[]> stations;
+	private LinkedList<StationInfo> currentStations;
 	
-	public DataManager() {}
+	//Files for stored data
+	File boroughKey = new File("./res/DataManager/BoroughKey.txt");
+	File boroughDensities = new File("./res/DataManager/BoroughDensities.txt");
+	File boroughPlaces = new File("./res/DataManager/BoroughPlace.txt");
+
+	
+	public DataManager() 
+	{
+		init();
+	}
 	
 	public void init()
 	{
 		stations = new TreeMap<String, float[]>();
+		currentStations = new LinkedList<StationInfo>();
+		loadStations();
 	}
 	
+	//Used to get the BroughNames for Analysis Manager.
 	public String[] getBoroughNames()
 	{
 		
 		String[] BoroughNames = new String[33];
-		BufferedReader br = null;
 		
 		try 
 		{
  
 			String Temp;
-			br = new BufferedReader(new FileReader("./res/BoroughKey.txt"));
+			BufferedReader br = new BufferedReader(new FileReader(boroughKey));
 			Temp = br.readLine();
 			br.close();
 			BoroughNames = Temp.split(", ");
@@ -44,7 +66,7 @@ public class DataManager
 		catch (Exception e) 
 		{
 			
-			MainManager.logMessage("#DataManager: Could not read ./res/BoroughKey.txt.");
+			MainManager.logMessage("#DataManager: Could not read ./res/DataAnalysis/BoroughKey.txt.");
 		
 		}
 		
@@ -52,6 +74,7 @@ public class DataManager
 		
 	}
 	
+	//Used to get the Borough Densities for AnalysisManager.
 	public int[] getBoroughDensities()
 	{
 	
@@ -64,18 +87,18 @@ public class DataManager
 		{
 	
 			String BoroughPos;
-			br = new BufferedReader(new FileReader("./res/BoroughDensities.txt"));
+			br = new BufferedReader(new FileReader(boroughDensities));
 			BoroughPos = br.readLine();
 			br.close();
 			String[] tokens = BoroughPos.split(" ");
 			
-			for(int i = 0; i < 33; i++)	{ PopDen[i] = 259*Integer.valueOf(tokens[i]);	}
+			for(int i = 0; i < tokens.length; i++)	{ PopDen[i] = (int)(259*Double.valueOf(tokens[i]));	}
 	
 		} 
 		catch (Exception e) 
 		{
 			
-			MainManager.logMessage("#DataManager: Could not read ./res/BoroughDensities.txt.");
+			MainManager.logMessage("#DataManager: Could not read ./res/DataManager/BoroughDensities.txt.");
 			
 		}
 		
@@ -83,17 +106,18 @@ public class DataManager
 		
 	}
 	
-	public int[] getBoroughPlaces()
+	//Used to allocate the cells boroughs for AnalysisManager.
+	public byte[] getBoroughPlaces()
 	{
 		
-		int[] BoroughPlaces = new int[1600];
+		byte[] BoroughPlaces = new byte[1600];
 		BufferedReader br = null;
 		
 		try 
 		{
  
 			String BoroughPos;
-			br = new BufferedReader(new FileReader("./res/BoroughPlace.txt"));
+			br = new BufferedReader(new FileReader(boroughPlaces));
 			BoroughPos = br.readLine();
 			br.close();
 			String[] tokens = BoroughPos.split(" ");
@@ -101,7 +125,7 @@ public class DataManager
 			for(int i = 0; i < 1600; i++)
 			{
 				
-				BoroughPlaces[i] =  Integer.valueOf(tokens[i]);
+				BoroughPlaces[i] =  Byte.valueOf(tokens[i]);
 					
 			}
  
@@ -109,7 +133,7 @@ public class DataManager
 		catch (Exception e) 
 		{
 			
-			MainManager.logMessage("#DataManager: Could not read ./res/BoroughPlace.txt.");
+			MainManager.logMessage("#DataManager: Could not read ./res/DataManager/BoroughPlace.txt.");
 		
 		}
 		
@@ -117,91 +141,166 @@ public class DataManager
 		
 	}
 	
-	/*
-	 
-	Will return the travel data in the form of int[Stations][time step in order].
+
 	
-	*/
-	
-	public int[][] getWeekTravelInData()
+	//Gets the next StationInfo as long as loadStationTravel has been called and there are more stations available to get
+	public StationInfo getNextStation()
 	{
+		if(currentStations.isEmpty()) return null;
+		else return currentStations.poll();
+	}
+	
+	//Loads from the file next to be used by Analysis to enable getNextStation()
+	public void loadStationTravel(String direction, String time)
+	{
+		currentStations.clear();
+		File csv = new File("./res/TravelManager/CSVTravelData/" + direction + time + ".xls.csv");
+		BufferedReader reader = null;
 		
-		int[][] TravelData = new int[268][24*4];
+		try
+		{
+			reader = new BufferedReader(new FileReader(csv));
+		}
+		catch(FileNotFoundException e)
+		{
+			MainManager.logMessage("#DataManager: Could not find file \"" + csv.getPath() + "\"");
+			e.printStackTrace();
+			return;
+		}
 		
-		return TravelData;
+		String record = new String();
+		
+		try
+		{
+			do
+			{
+				record = reader.readLine();
+				if(record == null) break;
+				if(record.length() == 0) continue;
+				
+				if(Character.isDigit(record.charAt(0)))
+				{
+					String[] attributes = record.split(",");
+					String stationName = attributes[1];
+					stationName = stationName.replaceAll("\"", "").trim();
+					float[] coords = getStationLocation(stationName);
+					
+					int[] values = new int[96]; //96 sets of 15 minutes per day
+					
+					for(int i = 0; i < 96; i++)
+					{
+						values[i] = Integer.parseInt(attributes[4 + i]);
+					}
+					
+					currentStations.add(new StationInfo(coords, values));
+				}
+			}
+			while(record != null);
+		}
+		catch(IOException e)
+		{
+			MainManager.logMessage("#DataManager: Could not read \"" + csv.getPath() + "\", encountered IOException");
+			e.printStackTrace();
+		}
+		catch(NumberFormatException e)
+		{
+			MainManager.logMessage("#DataManager: Unable to parse values in\"" + csv.getPath() + "\"");
+			e.printStackTrace();
+		}
+		finally
+		{
+			try
+			{
+				reader.close();
+			}
+			catch(Exception e){}
+		}
+		
+		return;
+		
 		
 	}
 	
-	public int[][] getSatTravelInData()
-	{
-		
-		int[][] TravelData = new int[268][24*4];
-		
-		return TravelData;
-		
-	}
 	
-	public int[][] getSunTravelInData()
+	//Gets the insight for the given day
+	//Probably contains a bug where record will not be found as 01-01-2011 is in flu2010.csv
+	//Returns -1 if nothing found in file
+	public byte getGoogleInsights(Calendar date)
 	{
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+		Byte returnVal = -1;
+		String dir = new String("./res/GoogleManager/flu" + date.get(Calendar.YEAR) + ".csv");
+		File csv = new File(dir);
+		BufferedReader reader = null;
 		
-		int[][] TravelData = new int[268][24*4];
+		try
+		{
+			reader = new BufferedReader(new FileReader(csv));
+		}
+		catch(FileNotFoundException e)
+		{
+			MainManager.logMessage("#DataManager: Google Insights does not exist for that year, try updating GoogleManager");
+			e.printStackTrace();
+			return -1;
+		}
 		
-		return TravelData;
+		String record = new String();
 		
-	}
-	
-	public int[][] getWeekTravelOutData()
-	{
+		try
+		{
+			while(record != null)
+			{
+				record = reader.readLine();
+				if(record.length() == 0) continue;
+				
+				if(Character.isDigit(record.charAt(0)))
+				{
+					String[] pair = record.split(",");
+					String[] dates = pair[0].split(" - ");
+					
+					long earlyDate = format.parse(dates[0]).getTime();
+					long laterDate = format.parse(dates[1]).getTime();
+					
+					if(date.getTimeInMillis() <= laterDate && date.getTimeInMillis() >= earlyDate)
+					{
+						returnVal = Byte.parseByte(pair[1]);
+						break;
+					}
+				}
+			}
+			
+		}
+		catch(IOException e)
+		{
+			MainManager.logMessage("#DataManager: Could not read Google Insights, encountered IOException");
+			e.printStackTrace();
+			returnVal = -1;
+		}
+		catch(ParseException e)
+		{
+			MainManager.logMessage("#DataManager: Unable to parse dates in Google Insights file");
+			e.printStackTrace();
+			returnVal = -1;
+		}
+		finally
+		{
+			try
+			{
+				reader.close();
+			}
+			catch(Exception e){}
+		}
 		
-		int[][] TravelData = new int[268][24*4];
-		
-		return TravelData;
-		
-	}
-	
-	public int[][] getSatTravelOutData()
-	{
-		
-		int[][] TravelData = new int[268][24*4];
-		
-		return TravelData;
-		
-	}
-	
-	public int[][] getSunTravelOutData()
-	{
-		
-		int[][] TravelData = new int[268][24*4];
-		
-		return TravelData;
-		
-	}
-	
-	/*
-	 
-	Will put station i's x, y coordinate in TrainStations[i*2], TrainStaitions[i*2 + 1].
-	 
-	*/
-	
-	public int[] getTrainStations()
-	{
-		
-		
-		
-		
-		int[] TrainStations = new int[268*2];
-		
-		return TrainStations;
-		
+		return returnVal;
 	}
 	
 	public float[] getStationLocation(String name)
 	{
-		return stations.get(name);
+		return stations.get(name.toUpperCase());
 	}
 	
 	//Loads the station locations from a KML file into a TreeMap for later retrieval by AnalysisManager
-	public void loadStations()
+	private void loadStations()
 	{
 		try
 		{
@@ -227,6 +326,7 @@ public class DataManager
 					if(stationInfo.item(j).getNodeName() == "name")
 					{
 						stationName = stationInfo.item(j).getTextContent();
+						if(stationName.contains(" Station")) stationName = stationName.replaceFirst(" Station", "");
 					}
 					else if(stationInfo.item(j).getNodeName() == "Point")
 					{
@@ -237,7 +337,8 @@ public class DataManager
 					}
 				}
 				
-				stations.put(stationName, coordinates);
+				//System.out.println(stationName.toUpperCase().trim());
+				stations.put(stationName.toUpperCase().trim(), coordinates);
 			}
 		}
 		catch(Exception e)
@@ -247,4 +348,16 @@ public class DataManager
 		}
 	}
 	
+	//Class containing coordinates and movement of people for a single station
+	public class StationInfo
+	{
+		private StationInfo(float[] coords, int[] peeps)
+		{
+			coordinates = coords;
+			people = peeps;
+		}
+		
+		public float[] coordinates;
+		public int[] people;
+	}
 }

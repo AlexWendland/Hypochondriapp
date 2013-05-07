@@ -23,7 +23,6 @@ import twitter4j.conf.ConfigurationBuilder;
 public class TwitterManager implements Runnable
 {
 	private static final long MILLIS_IN_DAY = 86400000;
-	private static final long UPDATE_TIME = 1200000; //Time between updates
 	
 	private Properties twitterProperties; //Data from twitter.properties
 	private Configuration config; //Twitter configuration data
@@ -82,14 +81,14 @@ public class TwitterManager implements Runnable
 			{
 				try
 				{
-					wait(UPDATE_TIME);
+					wait(MainManager.UPDATE_TIME);
 				}
 				catch(InterruptedException e){}
 			}
 		}
 	}
 
-	//Gets all illness tweets from the past 24 hours from London
+	//Gets all illness tweets from the past 48 hours from London
 	private void updateTweets()
 	{
 		Twitter twitter = new TwitterFactory(config).getInstance();
@@ -130,18 +129,18 @@ public class TwitterManager implements Runnable
 				String location = null;
 				
 				long tweetTime = resultList.get(i).getCreatedAt().getTime();
-				if(currentTime - tweetTime > MILLIS_IN_DAY)
+				if(currentTime - tweetTime > MILLIS_IN_DAY*2) //Using 48 hours
 				{
 					finished = true;
 					break;
 				}
 				
+				if(resultList.get(i).getUser() == null) continue;
+				
 				location = resultList.get(i).getUser().getLocation();
 				location = location.toUpperCase();
 				if(!location.contains("LONDON")) continue;
 				else locations.add(location);
-
-				System.out.println(location + ":" + resultList.get(i).getText());
 			}
 			
 			if(!result.hasNext())

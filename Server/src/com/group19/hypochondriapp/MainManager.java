@@ -1,9 +1,11 @@
 package com.group19.hypochondriapp;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -16,12 +18,19 @@ public class MainManager
 	//List of all modules.
 	private static TwitterManager twitterManager;
 	private static GoogleManager googleManager;
+	private static TravelManager travelManager;
 	private static AppNetworkManager appNetworkManager;
 	private static DataManager dataManager;
+	private static AnalysisManager analysisManager;
+	
+	private static Thread[] managerThreads;
 	
 	//Objects for storing logged messages.
 	private static ConcurrentLinkedQueue<String> log;
 	private static SimpleDateFormat timeFormat;
+	
+	//Update time for server
+	public static final long UPDATE_TIME = 1200000; //Time between updates
 	
 	public static void init()
 	{
@@ -29,8 +38,18 @@ public class MainManager
 		timeFormat = new SimpleDateFormat("dd/MM/yy HH:mm:ss.SSS - ");
 		
 		twitterManager = new TwitterManager();
-		googleManager = new GoogleManager();
 		appNetworkManager = new AppNetworkManager();
+		analysisManager = new AnalysisManager();
+		
+		googleManager = new GoogleManager();
+		travelManager = new TravelManager();
+		dataManager = new DataManager();
+		
+		managerThreads = new Thread[3];
+		
+		managerThreads[0] = new Thread(twitterManager);
+		managerThreads[1] = new Thread(appNetworkManager);
+		managerThreads[2] = new Thread(analysisManager);
 	}
 	
 	public static void cleanup()
@@ -45,7 +64,7 @@ public class MainManager
 		System.out.println(toLog);
 	}
 	
-	public static void writeLog()
+	private static void writeLog()
 	{
 		if(log.isEmpty()) return;
 		
@@ -76,36 +95,164 @@ public class MainManager
 	{
 		init();
 		
+		logMessage("#MainManager: Server initialised, ready to accept commands");
+	
+		String command = new String();
 		
-		/*
-		Thread twitter = new Thread(twitterManager);
-		twitter.start();
+		BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
 		
-		//Tests for the twitter miner.
-		System.in.read();
-		shutdown = true;
-		twitter.interrupt();
-		
-		try 
+		while(!command.startsWith("shutdown"))
 		{
-			twitter.join();
-		} 
-		catch (InterruptedException e) {}
-		
-		*/
-		
-		appNetworkManager.run();
-		
-		//googleManager.updateCSV();
+			command = console.readLine().toLowerCase();
+			
+			interpretCmd(command);
+			
+			if(command.startsWith("update")) System.out.println("Okay");
+		}
 		
 		cleanup();
+	}
+	
+	//Performs currently available actions from console
+	private static void interpretCmd(String command)
+	{
+		if(command.startsWith("start"))
+		{
+			if(command.contains("twittermanager"))
+			{
+				if(managerThreads[0].isAlive())
+				{
+					logMessage("#MainManager: Cannot start TwitterManager as it is already alive");
+				}
+				else
+				{
+					managerThreads[0].start();
+					logMessage("#MainManager: TwitterManager thread started");
+				}
+			}
+			
+			else if(command.contains("appnetworkmanager"))
+			{
+				if(managerThreads[1].isAlive())
+				{
+					logMessage("#MainManager: Cannot start AppNetworkManager as it is already alive");
+				}
+				else
+				{
+					managerThreads[1].start();
+					logMessage("#MainManager: AppNetworkManager thread started");
+				}
+			}
+			
+			else if(command.contains("analysismanager"))
+			{
+				if(managerThreads[2].isAlive())
+				{
+					logMessage("#MainManager: Cannot start AnalysisManager as it is already alive");
+				}
+				else
+				{
+					managerThreads[2].start();
+					logMessage("#MainManager: AnalysisManager thread started");
+				}
+			}
+			
+			else
+			{
+				System.out.println("Unknown start command");
+				return;
+			}
+		}
+		
+		else if(command.startsWith("qs"))
+		{
+			
+			if(managerThreads[0].isAlive())
+			{
+				logMessage("#MainManager: Cannot start TwitterManager as it is already alive");
+			}
+			else
+			{
+				managerThreads[0].start();
+				logMessage("#MainManager: TwitterManager thread started");
+			}
+			
+			if(managerThreads[2].isAlive())
+			{
+				logMessage("#MainManager: Cannot start AnalysisManager as it is already alive");
+			}
+			else
+			{
+				managerThreads[2].start();
+				logMessage("#MainManager: AnalysisManager thread started");
+			}
+			
+		}
+		
+		else if(command.startsWith("update"))
+		{
+			if(command.contains("googlemanager"))
+			{
+				String[] arguments = command.split(" ");
+				
+				try
+				{
+					googleManager.setUpdateYear(Integer.parseInt(arguments[2]));
+				}
+				catch(Exception e)
+				{
+					System.out.println("Syntax: update googlemanager <year>");
+					return;
+				}
+				
+				Thread google = new Thread(googleManager);
+				google.start();
+				logMessage("#MainManager: GoogleManager thread updating");
+			}
+			
+			else if(command.contains("travelmanager"))
+			{
+				Thread travel = new Thread(travelManager);
+				travel.start();
+				logMessage("#MainManager: TravelManager thread updating");
+			}
+			
+			else
+			{
+				System.out.println("Unknown update command");
+				return;
+			}
+		}
+		
+		else if (command.startsWith("shutdown"))
+		{
+			shutdown();
+		}
+		
+		else
+		{
+			System.out.println("Unknown command");
+			return;
+		}
+	}
+	
+	private static void shutdown()
+	{
+		logMessage("#MainManager: Shutting down");
+		shutdown = true;
+		
+		for(int i = 0; i < managerThreads.length; i++)
+		{
+			managerThreads[i].interrupt();
+		}
 	}
 	
 	public static TwitterManager getTwitterManager() { return twitterManager; }
 	public static GoogleManager getGoogleManager() { return googleManager; }
 	public static AppNetworkManager getAppNetworkManager() { return appNetworkManager; }
-	public static DataManager getDataManager() {return dataManager; };
+	public static DataManager getDataManager() { return dataManager; }
+	public static AnalysisManager getAnalysisManager() { return analysisManager; }
 	
 	public static boolean isShutdown() { return shutdown; }
-
+	
 }

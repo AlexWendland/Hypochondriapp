@@ -7,17 +7,12 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Calendar;
 import java.util.Properties;
 
 public class GoogleManager implements Runnable
 {
-	private static final long UPDATE = 2419200000l;
-	
 	private Properties googleProperties;
-	
-	private long lastUpdate;
-	private boolean updateRequired = false;
+	private int updateYear = 0;
 	
 	public GoogleManager()
 	{
@@ -47,15 +42,11 @@ public class GoogleManager implements Runnable
 			e.printStackTrace();
 			System.exit(-1);
 		}
-		
-		lastUpdate = Long.parseLong(googleProperties.getProperty("g.lastUpdate"));
-		
-		if((Calendar.getInstance().getTimeInMillis() - lastUpdate) > UPDATE) updateRequired = true;
 	}
 	
-	public void cleanup()
+	public void setUpdateYear(int year)
 	{
-		
+		updateYear = year;
 	}
 	
 	
@@ -122,7 +113,17 @@ public class GoogleManager implements Runnable
 	@Override
 	public void run() 
 	{
-		//if(updateRequired) updateCSV();
+		if(updateYear == 0)
+		{
+			MainManager.logMessage("#GoogleManager: Year to update not specified");
+			return;
+		}
+		else
+		{
+			updateCSV(updateYear);
+			updateYear = 0;
+		}
+
 	}
 
 }
