@@ -8,7 +8,7 @@ import java.net.SocketTimeoutException;
 
 public class AppNetworkManager implements Runnable
 {
-	public static final int PORT = 59999;
+	public static final int PORT = 8033;
 	public static final int NUM_THREADS = 4;
 	
 	ServerSocket socket;

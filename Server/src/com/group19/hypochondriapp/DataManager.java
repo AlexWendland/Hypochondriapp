@@ -33,6 +33,7 @@ public class DataManager
 	File boroughKey = new File("./res/DataManager/BoroughKey.txt");
 	File boroughDensities = new File("./res/DataManager/BoroughDensities.txt");
 	File boroughPlaces = new File("./res/DataManager/BoroughPlace.txt");
+	File fakeNHS = new File("./res/DataManager/FakeNHS.txt.");
 
 	
 	public DataManager() 
@@ -141,6 +142,41 @@ public class DataManager
 		
 	}
 	
+	
+	//Get's the Fake NHS data.
+	public float[] getNHS()
+	{
+		
+		float[] NHS = new float[33];
+		BufferedReader br = null;
+		
+		try 
+		{
+ 
+			String BoroughPos;
+			br = new BufferedReader(new FileReader(fakeNHS));
+			BoroughPos = br.readLine();
+			br.close();
+			String[] tokens = BoroughPos.split(" ");
+				
+			for(int i = 0; i < 33; i++)
+			{
+				
+				NHS[i] =  Float.valueOf(tokens[i]);
+					
+			}
+ 
+		} 
+		catch (Exception e) 
+		{
+			
+			MainManager.logMessage("#DataManager: Could not read ./res/DataManager/FakeNHS.txt.");
+		
+		}
+		
+		return NHS;
+		
+	}
 
 	
 	//Gets the next StationInfo as long as loadStationTravel has been called and there are more stations available to get

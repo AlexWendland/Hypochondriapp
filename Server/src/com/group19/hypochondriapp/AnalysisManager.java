@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Random;
 
 import com.group19.hypochondriapp.DataManager.StationInfo;
 
@@ -27,6 +28,7 @@ public class AnalysisManager implements Runnable {
 	File tempStore = new File("./res/AnalysisManager/tempStore.txt");
 	File currentStore = new File("./res/AnalysisManager/currentStore.txt");
 	public static final int TWITSCALAR = 1000;
+	public static final byte TWITTER_CELLS = 100;  
 	public static final int DAY_OF_UPDATE = 0;
 	
 	//Initiation of the model.
@@ -140,6 +142,19 @@ public class AnalysisManager implements Runnable {
 	}
 	
 	
+	private int[] getRandomCells()
+	{
+		
+		int[] randomCells = new int[TWITTER_CELLS];
+		Random generator = new Random();
+		
+		for (int i = 0; i < TWITTER_CELLS; i++)	{ randomCells[i] = generator.nextInt(800);	}
+		
+		return randomCells;
+		
+	}
+	
+	
 	//Function will be called, to sort and allocated expected ill from the twitter data.
 	public void setTweets()
 	{
@@ -191,15 +206,12 @@ public class AnalysisManager implements Runnable {
 			if(Place.contains("EAST"))
 			{
 				
-				for(int i = 0; i < 40; i++)
+				int[] cells = getRandomCells();
+				
+				for(int i = 0; i < TWITTER_CELLS; i++)
 				{
 					
-					for(int j = 0; j < 20; j++)
-					{
-						
-						ill[20+i*40+j] += (TWITSCALAR/800);
-						
-					}
+					ill[((int)cells[i]/20)*40 + 20 + (cells[i]%20)] += TWITSCALAR/TWITTER_CELLS;
 					
 				}
 				
@@ -210,15 +222,12 @@ public class AnalysisManager implements Runnable {
 			if(Place.contains("WEST"))
 			{
 				
-				for(int i = 0; i < 40; i++)
+				int[] cells = getRandomCells();
+				
+				for(int i = 0; i < TWITTER_CELLS; i++)
 				{
 					
-					for(int j = 0; j < 20; j++)
-					{
-						
-						ill[i*40+j] += (TWITSCALAR/800);
-						
-					}
+					ill[(int)(cells[i]/20) + (cells[i]%20)] += TWITSCALAR/TWITTER_CELLS;
 					
 				}
 				
@@ -366,6 +375,8 @@ public class AnalysisManager implements Runnable {
 			try
 			{
 				
+				/*
+				
 				synchronized(this){
 					
 					try{ wait(5000);	} 
@@ -379,10 +390,12 @@ public class AnalysisManager implements Runnable {
 					}
 				}
 				
+				*/
 				
 				float scalar = previousAverage[0]/MainManager.getDataManager().getGoogleInsights(currentDate);
 				
 				if (scalar <= 0) 	continue;
+				
 				
 				for(int j = 0; j < 4; j++)
 				{
@@ -818,6 +831,21 @@ public class AnalysisManager implements Runnable {
 	}
 	
 	
+	public void addNHS()
+	{
+		
+		float[] NHS = MainManager.getDataManager().getNHS();
+		
+		for(int i = 0; i < 1600; i++)
+		{
+			
+			ill[i] += NHS[borough[i] - 1]*pop[i]/100;
+			
+		}
+		
+	}
+	
+	
 	//If the model is required to generate a new packet for the app, this will run.
 	public void update()
 	{
@@ -832,6 +860,7 @@ public class AnalysisManager implements Runnable {
 	    currentDate.setTime(new Date());
 		
 		setTweets();
+		addNHS();
 		addTransport(currentDate);
 		
 		dataToBeSent[0] = ill;
