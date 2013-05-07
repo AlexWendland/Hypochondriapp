@@ -177,6 +177,18 @@ public class MainManager
 				logMessage("#MainManager: TwitterManager thread started");
 			}
 			
+			
+			if(managerThreads[1].isAlive())
+			{
+				logMessage("#MainManager: Cannot start AppNetworkManager as it is already alive");
+			}
+			else
+			{
+				managerThreads[1].start();
+				logMessage("#MainManager: AppNetworkManager thread started");
+			}
+			
+			
 			if(managerThreads[2].isAlive())
 			{
 				logMessage("#MainManager: Cannot start AnalysisManager as it is already alive");

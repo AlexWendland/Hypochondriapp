@@ -22,7 +22,6 @@ public class AnalysisManager implements Runnable {
 	//The variables to do with model updates and output of AnalysisManager.
 	private AppDataPacket toBeSent = new AppDataPacket();
 	private boolean updated;
-	private boolean newData;
 	
 	//Files used and constants.
 	File tempStore = new File("./res/AnalysisManager/tempStore.txt");
@@ -39,7 +38,6 @@ public class AnalysisManager implements Runnable {
 		setPop = new int[1600];
 		ill = new float[1600];
 		updated = true;
-		newData = false;
 		
 		for(int i = 0; i < 1600; i++)	
 		{ 
@@ -354,8 +352,10 @@ public class AnalysisManager implements Runnable {
 	public float[] prediction(float[] previousAverage, Calendar currentDate, byte borough)
 	{
 		
-		float currentMinError = 999999;
+		float currentMinError = 999999999;
 		float[] currentEstimate = new float[2];
+		
+		currentEstimate[1] = currentEstimate[0] = 0;
 		
 		for(int i = 0; i < 9; i++)
 		{
@@ -365,7 +365,24 @@ public class AnalysisManager implements Runnable {
 			float error = 0;
 			try
 			{
+				
+				synchronized(this){
+					
+					try{ wait(5000);	} 
+					catch (Exception e) 
+					{ 
+						
+						e.printStackTrace();
+						
+						MainManager.logMessage("#AnalysisManager: System couldn't wait");
+						
+					}
+				}
+				
+				
 				float scalar = previousAverage[0]/MainManager.getDataManager().getGoogleInsights(currentDate);
+				
+				if (scalar <= 0) 	continue;
 				
 				for(int j = 0; j < 4; j++)
 				{
@@ -376,6 +393,8 @@ public class AnalysisManager implements Runnable {
 				}
 				
 				currentDate.add(Calendar.WEEK_OF_YEAR, 4);
+				
+				
 				
 				if(error < currentMinError)
 				{
@@ -388,9 +407,11 @@ public class AnalysisManager implements Runnable {
 					currentDate.add(Calendar.WEEK_OF_YEAR, -2);
 					
 				}
+				
+				
 			} catch (Exception e)
 			{
-				continue;
+				MainManager.logMessage("#AnalysisManager: State failed");
 			}
 			
 		}
@@ -797,26 +818,6 @@ public class AnalysisManager implements Runnable {
 	}
 	
 	
-	//Function to be used to retrive data from Analysis Manager.
-	public AppDataPacket getAppDataPacket() { return toBeSent;	}
-	
-	
-	//Function to be used to check if the model has changed.
-	public boolean isNewData()
-	{
-	
-		if(newData)
-		{
-			
-			newData = false;
-			return true;
-			
-		} else
-			return false;
-		
-	}
-	
-	
 	//If the model is required to generate a new packet for the app, this will run.
 	public void update()
 	{
@@ -864,6 +865,18 @@ public class AnalysisManager implements Runnable {
 		resetPop();
 		
 		float[][] PredictedState = new float[24*8+7][1600];
+		
+		for(int i = 0; i < 24*8 + 7; i++)
+		{
+			
+			for(int j = 0; j < 1600; j++)
+			{
+				
+				PredictedState[i][j] = 0;
+				
+			}
+			
+		}
 		
 		for(int i = 0; i < 1600; i++)
 		{
@@ -986,10 +999,10 @@ public class AnalysisManager implements Runnable {
 			for(int j = 0; j < 1600; j++)
 			{
 				
-				if(PredictedState[i][j] > max1)
-					max1 = PredictedState[i][j];
+				if(dataToBeSent[i][j] > max1)
+					max1 = dataToBeSent[i][j];
 				
-				if(PredictedState[i][j] > max2)
+				if(ratioState[i][j] > max2)
 					max2 = ratioState[i][j];
 				
 			}
@@ -1003,16 +1016,40 @@ public class AnalysisManager implements Runnable {
 				if(max1 == 0)
 					newIllData[i][j] = -128;
 				else
-					newIllData[i][j] = (byte) ((PredictedState[i][j]*255/max1) - 128);
+					newIllData[i][j] = (byte) ((dataToBeSent[i][j]*255/max1) - 128);
 				
 				if(max2 == 0)
 					newRatioData[i][j] = -128;
 				else
-					newRatioData[i][j] = (byte) ((PredictedState[i][j]*255/max2) - 128);
+					newRatioData[i][j] = (byte) ((dataToBeSent[i][j]*255/max2) - 128);
 				
 			}	
 			
 		}
+		
+		/*
+		
+		for(int i = 0; i < 24*8+7; i++)
+		{
+			
+			System.out.println((newIllScalar[i]));
+			
+			synchronized(this){
+				
+				try{ wait(5000);	} 
+				catch (Exception e) 
+				{ 
+					
+					e.printStackTrace();
+					
+					MainManager.logMessage("#AnalysisManager: System couldn't wait");
+					
+				}
+			}
+			
+		}
+		
+		*/
 		
 		toBeSent.stationsData = transportMove;
 		toBeSent.illData = newIllData;
@@ -1057,9 +1094,10 @@ public class AnalysisManager implements Runnable {
 					MainManager.logMessage("#AnalysisManager: Starting prediction");
 					
 					update();
-					newData = true;
 					
 					MainManager.logMessage("#AnalysisManager: Prediction ended");
+					
+					MainManager.getAppNetworkManager().updateModel(toBeSent);
 					
 				}
 				
