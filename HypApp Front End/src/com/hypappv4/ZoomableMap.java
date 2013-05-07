@@ -23,6 +23,8 @@ public class ZoomableMap extends ImageView {
 	private Context mContext;
 	public int mapBMWidth;
 	public int mapBMHeight;
+	public int gridWidth = 40;
+	public int gridHeight = 40;
 	private final int FRAME_RATE = 5;
 	public Bitmap illBM;
 	private FakeData fd;
@@ -88,8 +90,8 @@ public class ZoomableMap extends ImageView {
 	public Bitmap setupIllnessBM (int which){
 		Bitmap bitm = Bitmap.createBitmap(mapBMWidth, mapBMHeight, Bitmap.Config.ARGB_8888);
 		Log.e("EXAMPLE", "1");
-		int xDiff = (int)(mapBMWidth/illnessData[which][0].length);
-		int yDiff = (int)(mapBMHeight/illnessData[which].length);
+		int xDiff = (int)(mapBMWidth/gridWidth);//illnessData[which][0].length);
+		int yDiff = (int)(mapBMHeight/gridHeight);//illnessData[which].length);
 		
 		int[][] pixels = new int[4][xDiff * yDiff];
 		for(int i = 0; i<pixels[0].length; i++){
@@ -100,8 +102,8 @@ public class ZoomableMap extends ImageView {
 		}
 		Log.e("EXAMPLE", "2");
 		
-		for(int y = 0; y<illnessData[which].length; y++){
-			for(int x = 0; x < illnessData[which][y].length; x ++){
+		for(int y = 0; y< gridHeight/*illnessData[which].length*/; y++){
+			for(int x = 0; x < gridWidth/*illnessData[which][y].length*/; x ++){
 				//NOTE: at the moment it's backwards, it goes [which][y][x], not [which][x][y], to be fixed
 				
 				try{

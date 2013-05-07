@@ -4,5 +4,15 @@
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK/google-play-services_lib"/>
+	<classpathentry kind="lib" path="/google-play-services_lib/bin"/>
+	<classpathentry kind="lib" path="/google-play-services_lib/libs"/>
+	<classpathentry kind="lib" path="/google-play-services_lib/res"/>
+	<classpathentry kind="lib" path="/google-play-services_lib/src"/>
+	<classpathentry kind="lib" path="D:/Program Files/adt-bundle-windows-x86/sdk/extras/google/google_play_services/libproject/google-play-services_lib/libs"/>
+	<classpathentry kind="lib" path="D:/Program Files/adt-bundle-windows-x86/sdk/extras/android/support/v4/android-support-v4.jar"/>
+	<classpathentry kind="lib" path="/google-play-services_lib/bin/google-play-services_lib.jar"/>
+	<classpathentry kind="lib" path="D:/Program Files/adt-bundle-windows-x86/sdk/add-ons/addon-google_apis-google-17/libs/maps.jar"/>
+	<classpathentry kind="lib" path="D:/Program Files/adt-bundle-windows-x86/sdk/add-ons/addon-google_apis-google-17/libs"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
