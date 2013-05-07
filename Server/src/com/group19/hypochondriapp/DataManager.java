@@ -248,7 +248,7 @@ public class DataManager
 		
 		try
 		{
-			do
+			while(record != null)
 			{
 				record = reader.readLine();
 				if(record.length() == 0) continue;
@@ -261,14 +261,14 @@ public class DataManager
 					long earlyDate = format.parse(dates[0]).getTime();
 					long laterDate = format.parse(dates[1]).getTime();
 					
-					if(date.getTimeInMillis() < laterDate && date.getTimeInMillis() >= earlyDate)
+					if(date.getTimeInMillis() <= laterDate && date.getTimeInMillis() >= earlyDate)
 					{
 						returnVal = Byte.parseByte(pair[1]);
 						break;
 					}
 				}
 			}
-			while(record != null);
+			
 		}
 		catch(IOException e)
 		{
