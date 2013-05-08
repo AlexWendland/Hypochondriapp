@@ -14,7 +14,7 @@
     			<include name="*.jar"/>
     		</fileset>
     	</path>
-        <javac srcdir="~/git/Server/src/com/group19/hypochondriapp" destdir="~server/classes" classpathref="classpath"/>
+        <javac srcdir="~/git/Server/src/com/group19/hypochondriapp" destdir="~/server/classes" classpathref="classpath"/>
     </target>
 
     <target name="jar">
