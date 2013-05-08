@@ -8,7 +8,7 @@ import java.net.SocketTimeoutException;
 
 public class AppNetworkManager implements Runnable
 {
-	public static final int PORT = 8033;
+	public static final int PORT = 8032;
 	public static final int NUM_THREADS = 4;
 	
 	ServerSocket socket;
@@ -64,6 +64,8 @@ public class AppNetworkManager implements Runnable
 		}
 		catch(Exception e){}
 		
+		MainManager.logMessage("#AppNetworkManager: Shutting down ...");
+		
 	}
 	
 
@@ -85,11 +87,11 @@ public class AppNetworkManager implements Runnable
 			Socket socket = null;
 			boolean appConnect = false;
 			
-			while(!MainManager.isShutdown())
+			while((!MainManager.isShutdown()) && (!MainManager.isAppNetworkShutdown()))
 			{
 				do
 				{
-					if(MainManager.isShutdown()) return;
+					if((MainManager.isShutdown()) || (MainManager.isAppNetworkShutdown())) return;
 					try
 					{
 						socket = server.accept();
@@ -131,6 +133,7 @@ public class AppNetworkManager implements Runnable
 					catch(Exception e){}
 				}
 			}
+			
 		}
 	}
 }

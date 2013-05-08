@@ -74,18 +74,25 @@ public class TwitterManager implements Runnable
 	@Override
 	public void run()
 	{
-		while(!MainManager.isShutdown())
+		while((!MainManager.isShutdown()) && (!MainManager.isTwitterShutdown()))
 		{
 			updateTweets();
-			synchronized(this)
+			
+			if((!MainManager.isShutdown()) && (!MainManager.isTwitterShutdown()))
 			{
-				try
+				synchronized(this)
 				{
-					wait(MainManager.UPDATE_TIME);
+					try
+					{
+						wait(MainManager.UPDATE_TIME);
+					}
+					catch(InterruptedException e) { }
 				}
-				catch(InterruptedException e){}
 			}
 		}
+		
+		MainManager.logMessage("#TwitterManager: Shutting down ...");
+		
 	}
 
 	//Gets all illness tweets from the past 48 hours from London

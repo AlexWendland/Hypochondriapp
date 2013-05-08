@@ -14,6 +14,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class MainManager 
 {
 	private static boolean shutdown = false;
+	private static boolean shutdownAnalysis = false;
+	private static boolean shutdownTwitter = false;
+	private static boolean shutdownAppNetwork = false;
 	
 	//List of all modules.
 	private static TwitterManager twitterManager;
@@ -101,7 +104,7 @@ public class MainManager
 		
 		BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
 		
-		while(!command.startsWith("shutdown"))
+		while(!shutdown)
 		{
 			command = console.readLine().toLowerCase();
 			
@@ -120,40 +123,100 @@ public class MainManager
 		{
 			if(command.contains("twittermanager"))
 			{
-				if(managerThreads[0].isAlive())
+				
+				if(!shutdownTwitter)
 				{
-					logMessage("#MainManager: Cannot start TwitterManager as it is already alive");
-				}
-				else
+				
+					if(managerThreads[0].isAlive())
+					{
+						logMessage("#MainManager: Cannot start TwitterManager as it is already alive");
+					}
+					else
+					{
+						shutdownTwitter = false;
+						managerThreads[0].start();
+						logMessage("#MainManager: TwitterManager thread started");
+					}
+					
+				} else
 				{
-					managerThreads[0].start();
-					logMessage("#MainManager: TwitterManager thread started");
+				
+					if(managerThreads[0].isAlive())
+					{
+						logMessage("#MainManager: Cannot start TwitterManager as it is already alive");
+					}
+					else
+					{
+						shutdownTwitter = false;
+						managerThreads[0].run();
+						logMessage("#MainManager: TwitterManager thread started");
+					}
+					
 				}
 			}
 			
 			else if(command.contains("appnetworkmanager"))
 			{
-				if(managerThreads[1].isAlive())
+				
+				if(!shutdownAppNetwork)
 				{
-					logMessage("#MainManager: Cannot start AppNetworkManager as it is already alive");
-				}
-				else
+					
+					if(managerThreads[1].isAlive())
+					{
+						logMessage("#MainManager: Cannot start AppNetworkManager as it is already alive");
+					}
+					else
+					{
+						shutdownAppNetwork = false;
+						managerThreads[1].start();
+						logMessage("#MainManager: AppNetworkManager thread started");
+					}
+				} else
 				{
-					managerThreads[1].start();
-					logMessage("#MainManager: AppNetworkManager thread started");
+					
+					if(managerThreads[1].isAlive())
+					{
+						logMessage("#MainManager: Cannot start AppNetworkManager as it is already alive");
+					}
+					else
+					{
+						shutdownAppNetwork = false;
+						managerThreads[1].run();
+						logMessage("#MainManager: AppNetworkManager thread started");
+					}
+					
 				}
 			}
 			
 			else if(command.contains("analysismanager"))
 			{
-				if(managerThreads[2].isAlive())
+				
+				if(!shutdownAnalysis)
 				{
-					logMessage("#MainManager: Cannot start AnalysisManager as it is already alive");
-				}
-				else
+					if(managerThreads[2].isAlive())
+					{
+						logMessage("#MainManager: Cannot start AnalysisManager as it is already alive");
+					}
+					else
+					{
+						shutdownAnalysis = false;
+						managerThreads[2].start();
+						logMessage("#MainManager: AnalysisManager thread started");
+					}
+				} else
 				{
-					managerThreads[2].start();
-					logMessage("#MainManager: AnalysisManager thread started");
+					
+					if(managerThreads[2].isAlive())
+					{
+						logMessage("#MainManager: Cannot start AppNetworkManager as it is already alive");
+					}
+					else
+					{
+						shutdownAppNetwork = false;
+						managerThreads[2].run();
+						logMessage("#MainManager: AppNetworkManager thread started");
+					}
+					
 				}
 			}
 			
@@ -167,36 +230,155 @@ public class MainManager
 		else if(command.startsWith("qs"))
 		{
 			
-			if(managerThreads[0].isAlive())
+			if(!shutdownTwitter)
 			{
-				logMessage("#MainManager: Cannot start TwitterManager as it is already alive");
+			
+				if(managerThreads[0].isAlive())
+				{
+					logMessage("#MainManager: Cannot start TwitterManager as it is already alive");
+				}
+				else
+				{
+					shutdownTwitter = false;
+					managerThreads[0].start();
+					logMessage("#MainManager: TwitterManager thread started");
+				}
+				
+			} else
+			{
+			
+				if(managerThreads[0].isAlive())
+				{
+					logMessage("#MainManager: Cannot start TwitterManager as it is already alive");
+				}
+				else
+				{
+					shutdownTwitter = false;
+					managerThreads[0].run();
+					logMessage("#MainManager: TwitterManager thread started");
+				}
+				
 			}
-			else
+			
+			if(!shutdownAppNetwork)
 			{
-				managerThreads[0].start();
-				logMessage("#MainManager: TwitterManager thread started");
+				
+				if(managerThreads[1].isAlive())
+				{
+					logMessage("#MainManager: Cannot start AppNetworkManager as it is already alive");
+				}
+				else
+				{
+					shutdownAppNetwork = false;
+					managerThreads[1].start();
+					logMessage("#MainManager: AppNetworkManager thread started");
+				}
+			} else
+			{
+				
+				if(managerThreads[1].isAlive())
+				{
+					logMessage("#MainManager: Cannot start AppNetworkManager as it is already alive");
+				}
+				else
+				{
+					shutdownAppNetwork = false;
+					managerThreads[1].run();
+					logMessage("#MainManager: AppNetworkManager thread started");
+				}
+				
 			}
 			
 			
-			if(managerThreads[1].isAlive())
+			if(!shutdownAnalysis)
 			{
-				logMessage("#MainManager: Cannot start AppNetworkManager as it is already alive");
-			}
-			else
+				if(managerThreads[2].isAlive())
+				{
+					logMessage("#MainManager: Cannot start AnalysisManager as it is already alive");
+				}
+				else
+				{
+					shutdownAnalysis = false;
+					managerThreads[2].start();
+					logMessage("#MainManager: AnalysisManager thread started");
+				}
+			} else
 			{
-				managerThreads[1].start();
-				logMessage("#MainManager: AppNetworkManager thread started");
+				
+				if(managerThreads[2].isAlive())
+				{
+					logMessage("#MainManager: Cannot start AppNetworkManager as it is already alive");
+				}
+				else
+				{
+					shutdownAppNetwork = false;
+					managerThreads[2].run();
+					logMessage("#MainManager: AppNetworkManager thread started");
+				}
+				
 			}
 			
+		}
+		
+		else if(command.startsWith("test"))
+		{
 			
-			if(managerThreads[2].isAlive())
+			if(!shutdownTwitter)
 			{
-				logMessage("#MainManager: Cannot start AnalysisManager as it is already alive");
+			
+				if(managerThreads[0].isAlive())
+				{
+					logMessage("#MainManager: Cannot start TwitterManager as it is already alive");
+				}
+				else
+				{
+					shutdownTwitter = false;
+					managerThreads[0].start();
+					logMessage("#MainManager: TwitterManager thread started");
+				}
+				
+			} else
+			{
+			
+				if(managerThreads[0].isAlive())
+				{
+					logMessage("#MainManager: Cannot start TwitterManager as it is already alive");
+				}
+				else
+				{
+					shutdownTwitter = false;
+					managerThreads[0].run();
+					logMessage("#MainManager: TwitterManager thread started");
+				}
+				
 			}
-			else
+			
+			if(!shutdownAnalysis)
 			{
-				managerThreads[2].start();
-				logMessage("#MainManager: AnalysisManager thread started");
+				if(managerThreads[2].isAlive())
+				{
+					logMessage("#MainManager: Cannot start AnalysisManager as it is already alive");
+				}
+				else
+				{
+					shutdownAnalysis = false;
+					managerThreads[2].start();
+					logMessage("#MainManager: AnalysisManager thread started");
+				}
+			} else
+			{
+				
+				if(managerThreads[2].isAlive())
+				{
+					logMessage("#MainManager: Cannot start AppNetworkManager as it is already alive");
+				}
+				else
+				{
+					shutdownAppNetwork = false;
+					managerThreads[2].run();
+					logMessage("#MainManager: AppNetworkManager thread started");
+				}
+				
 			}
 			
 		}
@@ -238,7 +420,64 @@ public class MainManager
 		
 		else if (command.startsWith("shutdown"))
 		{
-			shutdown();
+
+			if(command.contains("twittermanager"))
+			{
+				if(managerThreads[0].isAlive())
+				{
+					
+					shutdownTwitter = true;
+					managerThreads[0].interrupt();
+					logMessage("#MainManager: Shutting down TwitterManager");
+					
+				}
+				else
+				{
+					logMessage("#MainManager: Cannot shutdown TwitterManager as it is not alive");
+				}
+			}
+			
+			else if(command.contains("appnetworkmanager"))
+			{
+				if(managerThreads[1].isAlive())
+				{
+					shutdownAppNetwork = true;
+					managerThreads[1].interrupt();
+					logMessage("#MainManager: Shutting down AppNetworkManager");
+					
+				}
+				else
+				{
+					logMessage("#MainManager: Cannot shutdown AppNetworkManager as it is not alive");
+				}
+			}
+			
+			else if(command.contains("analysismanager"))
+			{
+				if(managerThreads[2].isAlive())
+				{
+					shutdownAnalysis = true;
+					managerThreads[2].interrupt();
+					logMessage("#MainManager: Shutting down AnalysisManager");
+					
+				}
+				else
+				{
+					logMessage("#MainManager: Cannot shutdown AnalysisManager as it is not alive");
+				}
+			}
+			
+			else if(command.contains("all"))
+			{
+				shutdown();
+			}
+			
+			else
+			{
+				System.out.println("Unknown shutdown command");
+				return;
+			}
+			
 		}
 		
 		else
@@ -246,6 +485,7 @@ public class MainManager
 			System.out.println("Unknown command");
 			return;
 		}
+		
 	}
 	
 	private static void shutdown()
@@ -266,5 +506,8 @@ public class MainManager
 	public static AnalysisManager getAnalysisManager() { return analysisManager; }
 	
 	public static boolean isShutdown() { return shutdown; }
+	public static boolean isAnalysisShutdown() { return shutdownAnalysis; }
+	public static boolean isTwitterShutdown() { return shutdownTwitter; }
+	public static boolean isAppNetworkShutdown() { return shutdownAppNetwork; }
 	
 }

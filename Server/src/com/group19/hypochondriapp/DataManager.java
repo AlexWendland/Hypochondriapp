@@ -287,6 +287,8 @@ public class DataManager
 			while(record != null)
 			{
 				record = reader.readLine();
+				
+				if(record == null) continue;
 				if(record.length() == 0) continue;
 				
 				if(Character.isDigit(record.charAt(0)))

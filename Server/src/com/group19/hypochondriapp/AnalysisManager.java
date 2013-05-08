@@ -27,7 +27,7 @@ public class AnalysisManager implements Runnable {
 	//Files used and constants.
 	File tempStore = new File("./res/AnalysisManager/tempStore.txt");
 	File currentStore = new File("./res/AnalysisManager/currentStore.txt");
-	public static final int TWITSCALAR = 1000;
+	public static final int TWITSCALAR = 100;
 	public static final byte TWITTER_CELLS = 100;  
 	public static final int DAY_OF_UPDATE = 0;
 	
@@ -211,7 +211,7 @@ public class AnalysisManager implements Runnable {
 				for(int i = 0; i < TWITTER_CELLS; i++)
 				{
 					
-					ill[((int)cells[i]/20)*40 + 20 + (cells[i]%20)] += TWITSCALAR/TWITTER_CELLS;
+					ill[((int)(cells[i]/20))*40 + 20 + (cells[i]%20)] += TWITSCALAR/TWITTER_CELLS;
 					
 				}
 				
@@ -227,7 +227,7 @@ public class AnalysisManager implements Runnable {
 				for(int i = 0; i < TWITTER_CELLS; i++)
 				{
 					
-					ill[(int)(cells[i]/20) + (cells[i]%20)] += TWITSCALAR/TWITTER_CELLS;
+					ill[((int)(cells[i]/20))*40 + (cells[i]%20)] += TWITSCALAR/TWITTER_CELLS;
 					
 				}
 				
@@ -238,15 +238,12 @@ public class AnalysisManager implements Runnable {
 			if(Place.contains("SOUTH"))
 			{
 				
-				for(int i = 0; i < 20; i++)
+				int[] cells = getRandomCells();
+				
+				for(int i = 0; i < TWITTER_CELLS; i++)
 				{
 					
-					for(int j = 0; j < 40; j++)
-					{
-						
-						ill[i*40+j] += (TWITSCALAR/800);
-						
-					}
+					ill[cells[i]] += TWITSCALAR/TWITTER_CELLS;
 					
 				}
 				
@@ -257,15 +254,12 @@ public class AnalysisManager implements Runnable {
 			if(Place.contains("NORTH"))
 			{
 				
-				for(int i = 0; i < 20; i++)
+				int[] cells = getRandomCells();
+				
+				for(int i = 0; i < TWITTER_CELLS; i++)
 				{
 					
-					for(int j = 0; j < 40; j++)
-					{
-						
-						ill[800 + i*40 + j] += (TWITSCALAR/800);
-						
-					}
+					ill[cells[i]+800] += TWITSCALAR/TWITTER_CELLS;
 					
 				}
 				
@@ -273,11 +267,38 @@ public class AnalysisManager implements Runnable {
 				
 			}
 			
-			for(int i = 0; i < 1600; i++)
+			if(Place.contains("CENTRAL"))
 			{
 				
-				ill[i] += (TWITSCALAR/1600);
+				int[] cells = getRandomCells();
 				
+				for(int i = 0; i < TWITTER_CELLS; i++)
+				{
+					
+					ill[((int)(cells[i]/40))*40 + 410 + (cells[i]%40)] += TWITSCALAR/TWITTER_CELLS;
+					
+				}
+				
+				continue;
+				
+			}
+				
+			int[] cells = getRandomCells();
+				
+			for(int i = 0; i < TWITTER_CELLS; i++)
+			{
+					
+				ill[cells[i]*2] += TWITSCALAR/(TWITTER_CELLS*2);
+					
+			}
+				
+			cells = getRandomCells();
+				
+			for(int i = 0; i < TWITTER_CELLS; i++)
+			{
+					
+				ill[cells[i]*2 + 1] += TWITSCALAR/(TWITTER_CELLS*2);
+					
 			}
 			
 		}
@@ -375,23 +396,6 @@ public class AnalysisManager implements Runnable {
 			try
 			{
 				
-				/*
-				
-				synchronized(this){
-					
-					try{ wait(5000);	} 
-					catch (Exception e) 
-					{ 
-						
-						e.printStackTrace();
-						
-						MainManager.logMessage("#AnalysisManager: System couldn't wait");
-						
-					}
-				}
-				
-				*/
-				
 				float scalar = previousAverage[0]/MainManager.getDataManager().getGoogleInsights(currentDate);
 				
 				if (scalar <= 0) 	continue;
@@ -421,10 +425,10 @@ public class AnalysisManager implements Runnable {
 					
 				}
 				
-				
 			} catch (Exception e)
 			{
 				MainManager.logMessage("#AnalysisManager: State failed");
+				e.printStackTrace();
 			}
 			
 		}
@@ -543,6 +547,8 @@ public class AnalysisManager implements Runnable {
 	{
 		
 		float[] pastData = new float[5];
+		
+		pastData[0] = pastData[1] =  pastData[2] = pastData[3] = pastData[4] = 0;
 		
 		try 
 		{
@@ -839,7 +845,7 @@ public class AnalysisManager implements Runnable {
 		for(int i = 0; i < 1600; i++)
 		{
 			
-			ill[i] += NHS[borough[i] - 1]*pop[i]/100;
+			ill[i] += NHS[borough[i] - 1]*pop[i]/1000;
 			
 		}
 		
@@ -1075,7 +1081,7 @@ public class AnalysisManager implements Runnable {
 					
 				}
 			}
-			
+		
 		}
 		
 		*/
@@ -1095,49 +1101,52 @@ public class AnalysisManager implements Runnable {
 		
 		init();
 		
-		while(!MainManager.isShutdown())
+		while((!MainManager.isShutdown()) && (!MainManager.isAnalysisShutdown()))
 		{
 			
-			/*
-			
-			synchronized(this){
-			
-				try{ wait(MainManager.UPDATE_TIME);	} 
-				catch (Exception e) 
-				{ 
-					
-					e.printStackTrace();
-					
-					MainManager.logMessage("#AnalysisManager: System couldn't wait");
-					
-				}
-			}
-			
-			*/
 			try
 			{
-				
+					
 				if(MainManager.getTwitterManager().isUpdated())
 				{
-					
+						
 					MainManager.logMessage("#AnalysisManager: Starting prediction");
-					
+						
 					update();
-					
+						
 					MainManager.logMessage("#AnalysisManager: Prediction ended");
-					
+						
 					MainManager.getAppNetworkManager().updateModel(toBeSent);
 					
 				}
-				
 			} catch (Exception e)
 			{
+						
+				MainManager.logMessage("#AnalysisManager: Prediction failed");
+				e.printStackTrace();
+						
+			}
+			
+			if((!MainManager.isShutdown()) && (!MainManager.isAnalysisShutdown()))
+			{
+				synchronized(this){
 				
-				MainManager.logMessage("#AnalysisManager: Prediction failed because of " + e.getMessage());
-				
+					try
+					{ 
+						
+						//wait(MainManager.UPDATE_TIME);
+						
+						wait(1000);
+						
+					}
+					catch (InterruptedException e) { }
+					
+				}
 			}
 							
 		}
+		
+		MainManager.logMessage("#AnalysisManager: Shutting down ...");
 		
 	}
 	
