@@ -33,7 +33,7 @@ public class DataManager
 	File boroughKey = new File("./res/DataManager/BoroughKey.txt");
 	File boroughDensities = new File("./res/DataManager/BoroughDensities.txt");
 	File boroughPlaces = new File("./res/DataManager/BoroughPlace.txt");
-	File fakeNHS = new File("./res/DataManager/FakeNHS.txt.");
+	File fakeNHS = new File("./res/DataManager/FakeNHS.txt");
 
 	
 	public DataManager() 

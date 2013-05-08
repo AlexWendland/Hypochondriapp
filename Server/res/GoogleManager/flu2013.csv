@@ -4,23 +4,23 @@ United Kingdom; 2013
 Interest over time
 Week,flu
 2013-01-06 - 2013-01-12,100
-2013-01-13 - 2013-01-19,79
-2013-01-20 - 2013-01-26,80
-2013-01-27 - 2013-02-02,85
-2013-02-03 - 2013-02-09,87
-2013-02-10 - 2013-02-16,85
-2013-02-17 - 2013-02-23,81
-2013-02-24 - 2013-03-02,88
-2013-03-03 - 2013-03-09,80
+2013-01-13 - 2013-01-19,77
+2013-01-20 - 2013-01-26,79
+2013-01-27 - 2013-02-02,86
+2013-02-03 - 2013-02-09,83
+2013-02-10 - 2013-02-16,86
+2013-02-17 - 2013-02-23,79
+2013-02-24 - 2013-03-02,87
+2013-03-03 - 2013-03-09,79
 2013-03-10 - 2013-03-16,70
-2013-03-17 - 2013-03-23,67
-2013-03-24 - 2013-03-30,65
-2013-03-31 - 2013-04-06,67
-2013-04-07 - 2013-04-13, 
-2013-04-14 - 2013-04-20, 
-2013-04-21 - 2013-04-27, 
-2013-04-28 - 2013-05-04, 
-2013-05-05 - 2013-05-11, 
+2013-03-17 - 2013-03-23,65
+2013-03-24 - 2013-03-30,60
+2013-03-31 - 2013-04-06,68
+2013-04-07 - 2013-04-13,61
+2013-04-14 - 2013-04-20,50
+2013-04-21 - 2013-04-27,46
+2013-04-28 - 2013-05-04,47
+2013-05-05 - 2013-05-11,58
 2013-05-12 - 2013-05-18, 
 2013-05-19 - 2013-05-25, 
 2013-05-26 - 2013-06-01, 
@@ -60,98 +60,98 @@ Week,flu
 Top subregions for flu
 Subregion,flu
 Northern Ireland,100
-England,88
-Scotland,80
-Wales,75
+England,89
+Scotland,82
+Wales,82
 Channel Islands,0
 Isle Of Man,0
 
 
 Top cities for flu
 City,flu
-Brighton,100
-Norwich,97
-Belfast,94
-London,94
-Oxford,91
+Belfast,100
+London,96
+Brighton,94
+Oxford,92
+Norwich,92
+Southampton,91
+Bristol,88
+Cardiff,87
+Manchester,86
+Edinburgh,86
+Slough,84
 Glasgow,83
-Southampton,82
-Reading,82
-Edinburgh,81
-Cambridge,79
-Leeds,79
-Manchester,78
-Bristol,77
-Cardiff,76
-Newcastle upon Tyne,76
+Cambridge,81
+Newcastle upon Tyne,80
+Sheffield,78
 
 
 
 Top searches for flu
+flu symptoms,100
 symptoms,100
-symptoms flu,100
-the flu,60
+the flu,65
 cold,45
 cold flu,45
-flu a,40
-flu how long,25
-cold and flu,25
 symptoms of flu,25
-flu uk,20
+cold and flu,25
+uk flu,20
 swine flu,20
-virus,20
-flu jab,20
 man flu,20
-flu 2013,20
 flu virus,20
+flu 2013,20
+virus,20
+flu jab,15
 nhs flu,15
-stomach flu,10
+the flu symptoms,15
+stomach flu,15
 what is flu,10
-flu camp,10
-pregnant flu,10
-flu pregnancy,10
-i have flu,10
+bird flu,10
+flu vaccine,10
 flu like symptoms,10
-flu 2012,10
+cold symptoms,10
+flu camp,10
+gastric flu,10
 cold flu symptoms,10
 fever,10
-flu vaccine,10
-swine flu symptoms,10
-gastric flu,5
-cold symptoms,5
-2013 flu symptoms,5
-flu treatment,5
-flu bug,5
-flu remedies,5
-nhs flu symptoms,5
-bird flu,5
-norovirus,5
-cat flu,5
-flu london,5
-flu in uk,5
-flu contagious,5
-flu virus symptoms,5
+flu pregnancy,10
+cat flu,10
+flu 2012,10
+google flu,10
+pregnant flu,5
+swine flu symptoms,5
 spanish flu,5
-pneumonia,5
+flu treatment,5
+flu symptoms 2013,5
+flu remedies,5
+flu bug,5
+virus symptoms,5
+flue,5
+flu food,5
+flu virus symptoms,5
 flu 2013 uk,5
+flu cure,5
+flu symptoms nhs,5
+cold or flu,5
+baby flu,5
 flu shot,5
-flu sore throat,5
-flu medicine,5
-flu temperature,5
+influenza,5
+pneumonia,5
+norovirus,5
 
 
 
 Rising searches for flu
-2013 flu symptoms,Breakout
 flu 2013 uk,Breakout
-flu virus 2013,Breakout
-flu 2013,+1,850%
-norovirus,+110%
-flu how long,+100%
-flu virus symptoms,+50%
-swine flu symptoms,+50%
-virus,+50%
-flu epidemic,+40%
+flu symptoms 2013,Breakout
+flu 2013,+2,600%
+bird flu,+60%
+google flu,+60%
+virus symptoms,+60%
+norovirus,+50%
+pneumonia,+50%
+the flu symptoms,+50%
+flu virus,+40%
 
 
 

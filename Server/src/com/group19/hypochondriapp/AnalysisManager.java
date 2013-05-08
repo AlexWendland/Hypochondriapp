@@ -25,8 +25,7 @@ public class AnalysisManager implements Runnable {
 	private boolean updated;
 	
 	//Files used and constants.
-	File tempStore = new File("./res/AnalysisManager/tempStore.txt");
-	File currentStore = new File("./res/AnalysisManager/currentStore.txt");
+	File dataStore = new File("./res/AnalysisManager/DataStore.txt");
 	public static final int TWITSCALAR = 100;
 	public static final byte TWITTER_CELLS = 100;  
 	public static final int DAY_OF_UPDATE = 0;
@@ -53,12 +52,9 @@ public class AnalysisManager implements Runnable {
 		
 		try
 		{
-		
-			if (!tempStore.exists()) 
-				tempStore.createNewFile();
 			
-			if (!currentStore.exists()) 
-				currentStore.createNewFile();
+			if (!dataStore.exists()) 
+				dataStore.createNewFile();
 		
 		} catch (Exception e)
 		{
@@ -71,6 +67,7 @@ public class AnalysisManager implements Runnable {
 	}
 	
 	
+	//Resets the model to the old pop.
 	public void resetPop()	{ pop = setPop;	}
 	
 	
@@ -142,6 +139,7 @@ public class AnalysisManager implements Runnable {
 	}
 	
 	
+	//Generates random cells to put ill people in.
 	private int[] getRandomCells()
 	{
 		
@@ -379,7 +377,7 @@ public class AnalysisManager implements Runnable {
 
 	
 	//Function is a called to provide a predicted future for a certain cell.
-	public float[] prediction(float[] previousAverage, Calendar currentDate, byte borough)
+	public static float[] prediction(float[] previousAverage, Calendar currentDate, byte borough)
 	{
 		
 		float currentMinError = 999999999;
@@ -387,49 +385,45 @@ public class AnalysisManager implements Runnable {
 		
 		currentEstimate[1] = currentEstimate[0] = 0;
 		
-		for(int i = 0; i < 9; i++)
+		currentDate.add(Calendar.WEEK_OF_YEAR, -8);
+		
+		while (MainManager.getDataManager().getGoogleInsights(currentDate) != -1)
 		{
 			
-			currentDate.add(Calendar.YEAR, -1);
+			currentDate.add(Calendar.WEEK_OF_YEAR, 5);
 			
 			float error = 0;
-			try
+			
+			float scalar = previousAverage[0]/MainManager.getDataManager().getGoogleInsights(currentDate);
+				
+			if (scalar <= 0) 	continue;
+				
+				
+			for(int j = 0; j < 4; j++)
 			{
-				
-				float scalar = previousAverage[0]/MainManager.getDataManager().getGoogleInsights(currentDate);
-				
-				if (scalar <= 0) 	continue;
-				
-				
-				for(int j = 0; j < 4; j++)
-				{
 					
-					currentDate.add(Calendar.WEEK_OF_YEAR, -1);
-					error += previousAverage[j+1] - MainManager.getDataManager().getGoogleInsights(currentDate)*scalar;
+				currentDate.add(Calendar.WEEK_OF_YEAR, -1);
+				error += Math.pow((previousAverage[j+1] - MainManager.getDataManager().getGoogleInsights(currentDate)*scalar),2);
 					
-				}
-				
-				currentDate.add(Calendar.WEEK_OF_YEAR, 4);
-				
-				
-				
-				if(error < currentMinError)
-				{
-					
-					currentMinError = error;
-					currentDate.add(Calendar.WEEK_OF_YEAR, 1);
-					currentEstimate[0] = MainManager.getDataManager().getGoogleInsights(currentDate)*scalar;
-					currentDate.add(Calendar.WEEK_OF_YEAR, 1);
-					currentEstimate[1] = MainManager.getDataManager().getGoogleInsights(currentDate)*scalar;
-					currentDate.add(Calendar.WEEK_OF_YEAR, -2);
-					
-				}
-				
-			} catch (Exception e)
-			{
-				MainManager.logMessage("#AnalysisManager: State failed");
-				e.printStackTrace();
 			}
+				
+			currentDate.add(Calendar.WEEK_OF_YEAR, 4);
+				
+			error = (float) Math.pow(error, 0.5);
+				
+			if(error < currentMinError)
+			{
+					
+				currentMinError = error;
+				currentDate.add(Calendar.WEEK_OF_YEAR, 1);
+				currentEstimate[0] = MainManager.getDataManager().getGoogleInsights(currentDate)*scalar;
+				currentDate.add(Calendar.WEEK_OF_YEAR, 1);
+				currentEstimate[1] = MainManager.getDataManager().getGoogleInsights(currentDate)*scalar;
+				currentDate.add(Calendar.WEEK_OF_YEAR, -2);
+					
+			}
+			
+			currentDate.add(Calendar.WEEK_OF_YEAR, -6);
 			
 		}
 			
@@ -438,104 +432,101 @@ public class AnalysisManager implements Runnable {
 	}
 	
 	
-	//Function is called to save current model to a tempory store.
-	public void recordData(float[] data)
+	//Function is called to save current model to the data store.
+	public void recordData(Calendar currentDate)
 	{
 		
-		String content = new String();
+		boolean needToUpdate = false;
 		
-		for (int i = 0; i < 1600; i++)
+		if((!updated) && (currentDate.get(Calendar.DAY_OF_WEEK) == DAY_OF_UPDATE))
 		{
 			
-			content += data[i] + " ";
+			needToUpdate = true;
+			updated = true;
 			
 		}
 		
+		if( (currentDate.get(Calendar.DAY_OF_WEEK) != DAY_OF_UPDATE) && (updated))
+		{
+			
+			updated = false;
+			
+		}
 		
+		String[] readInData;
+		
+		try 
+		{
+
+			BufferedReader br = new BufferedReader(new FileReader(dataStore.getAbsoluteFile()));
+			String Temp = br.readLine();
+			br.close();
+			
+			if ((Temp != null) && (Temp.length() != 0))
+			{
+				
+				readInData = Temp.split(" - ");
+				
+			} else
+			{
+				
+				readInData = new String[1];
+				
+			}
+			
+		} 
+		catch (Exception e) 
+		{
+			
+			MainManager.logMessage("#AnalysisManager: Could not read ./res/AnalysisManager/DataStore.txt, recommend shut down.");
+			return;
+		
+		}
+		
+		String content = new String();
+		
+		for(int i = 0; i < readInData.length - 1; i++)
+			content += readInData[i] + " - ";
+		
+		String[] Temp = readInData[readInData.length - 1].split(" ");
+		
+		if(needToUpdate)
+		{
+			
+			for(int i = 1; i < Temp.length; i++)
+				content += Temp[i] + " ";
+			
+			content += "- 1 ";
+			
+			for(int i = 0; i < 1600; i++)
+				content += ill[i] + " ";
+			
+			content += "- ";
+			
+		} else
+		{
+			
+			int num = Integer.valueOf(Temp[0]) + 1;
+			
+			content += num + " ";
+			
+			for(int i = 0; i < 1600; i++)
+				content += ((ill[i] + (Float.valueOf(Temp[i])*(num-1)))/num) + " ";
+			
+			content += "- ";
+			
+		}
 		
 		try{
 		
-			BufferedWriter tempBW = new BufferedWriter(new FileWriter(tempStore.getAbsoluteFile(), true));
+			BufferedWriter tempBW = new BufferedWriter(new FileWriter(dataStore.getAbsoluteFile()));
 			tempBW.write(content);
 			tempBW.close();
-			
 			
 		} catch (Exception e)
 		{
 			
 			MainManager.logMessage("#AnalysisManager: Failed to save current itteration of model.");
-			
-		}
-		
-	}
-	
-	
-	//Function is called to collate the tempory store and save the average data.
-	public void takeAverageAndSave()
-	{
-		
-		float[] average = new float[1600];
-		
-		for(int i = 0; i < 1600; i++)	{ average[i] = 0;	}
-		
-		try 
-		{
-
-			BufferedReader br = new BufferedReader(new FileReader(tempStore.getAbsoluteFile()));
-			String Temp1 = br.readLine();
-			br.close();
-			String[] Temp2 = Temp1.split(" ");
-			int num = (int) Temp2.length/1600;
-			
-			for(int i = 0; i < num; i++)
-			{
-				
-				for(int j = 0; j < 1600; j++)
-				{
-					
-					average[j] += Float.valueOf(Temp2[j + i*1600])/num;
-					
-				}
-				
-			}
-			
-			tempStore.delete();
-			tempStore.createNewFile();
- 
-		} 
-		catch (Exception e) 
-		{
-			
-			MainManager.logMessage("#AnalysisManager: Could not read ./res/Analysis/tempStore.txt, recommend shut down.");
-		
-		}
-		
-		String content = new String();
-		
-		for (int i = 0; i < 1600; i++)
-		{
-			
-			content += average[i]; 
-			
-			if(i != 1599)
-				content += " ";
-			else
-				content += " - ";
-			
-		}
-		
-		
-		try{
-		
-			BufferedWriter currentBW = new BufferedWriter(new FileWriter(currentStore.getAbsoluteFile(), true));
-			currentBW.write(content);
-			currentBW.close();
-			
-			
-		} catch (Exception e)
-		{
-			
-			MainManager.logMessage("#AnalysisManager: Failed to save current week average of model.");
 			
 		}
 		
@@ -553,7 +544,7 @@ public class AnalysisManager implements Runnable {
 		try 
 		{
 
-			BufferedReader br = new BufferedReader(new FileReader(currentStore.getAbsoluteFile()));
+			BufferedReader br = new BufferedReader(new FileReader(dataStore.getAbsoluteFile()));
 			String Temp1 = br.readLine();
 			br.close();
 			
@@ -561,9 +552,9 @@ public class AnalysisManager implements Runnable {
 			{
 				String[] Temp2 = Temp1.split(" - ");
 				int length = Temp2.length;
-				for(int i = 0; i < Math.min(5, length); i++)
+				for(int i = 0; i < Math.min(5, length - 1); i++)
 				{
-					String[] Temp3 = Temp2[length - (1+i)].split(" ");
+					String[] Temp3 = Temp2[length - (2+i)].split(" ");
 					
 					if(Temp3.length > 1599)
 						pastData[i] = Float.valueOf(Temp3[cell]);
@@ -576,7 +567,7 @@ public class AnalysisManager implements Runnable {
 		catch (Exception e) 
 		{
 			
-			MainManager.logMessage("#AnalysisManager: Could not read ./res/AnalysisManager/currentStore.txt, recommend shut down.");
+			MainManager.logMessage("#AnalysisManager: Could not read ./res/AnalysisManager/DataStore.txt, recommend shut down.");
 		
 		}
 		
@@ -733,7 +724,7 @@ public class AnalysisManager implements Runnable {
 	}
 
 	
-	//Function is called to get the infomation about the stations that will be sent over the network.
+	//Function is called to get the information about the stations that will be sent over the network.
 	public short[] getTransportData(Calendar date)
 	{
 		
@@ -767,7 +758,6 @@ public class AnalysisManager implements Runnable {
 				StationInfo currentStation = MainManager.getDataManager().getNextStation();
 				if ((currentStation != null) && (currentStation.people != null) && (currentStation.people.length > (24*4 - 1)))
 					currentTransport[i*2] = (short) currentStation.people[4*((HourRep+24)%24) + MinRep];
-				else
 					currentTransport[i*2] = 0;
 				
 			}
@@ -837,6 +827,7 @@ public class AnalysisManager implements Runnable {
 	}
 	
 	
+	//Add the NHS data.
 	public void addNHS()
 	{
 		
@@ -871,21 +862,6 @@ public class AnalysisManager implements Runnable {
 		
 		dataToBeSent[0] = ill;
 		
-		if((!updated) && (currentDate.get(Calendar.DAY_OF_WEEK) == DAY_OF_UPDATE))
-		{
-			
-			takeAverageAndSave();
-			updated = true;
-			
-		}
-		
-		if( (currentDate.get(Calendar.DAY_OF_WEEK) != DAY_OF_UPDATE) && (updated))
-		{
-			
-			updated = false;
-			
-		}
-		
 		float[][] ratioState = new float[24*8+7][1600];
 		
 		for(int i = 0; i < 1600; i++)
@@ -895,7 +871,7 @@ public class AnalysisManager implements Runnable {
 			
 		}
 		
-		recordData(ill);
+		recordData(currentDate);
 		
 		resetPop();
 		
@@ -1098,6 +1074,30 @@ public class AnalysisManager implements Runnable {
 	//The runnable.
 	public void run()
 	{
+			
+		/*
+		
+		float[] prevData = new float[5];
+		
+		prevData[0] = prevData[1] = prevData[2] = prevData[3] = prevData[4] = 1;
+		
+		Calendar currentDate = Calendar.getInstance();
+	    currentDate.setTime(new Date());
+	    
+	    prevData = prediction(prevData, currentDate, (byte) 1);
+		
+	    String content = "Prediction gives ";
+	    
+	    for(int i = 0; i < prevData.length; i++)
+	    {
+	    	
+	    	content += prevData[i] + " - ";
+	    	
+	    }
+	    
+	    System.out.println(content);
+		
+		*/
 		
 		init();
 		
@@ -1124,8 +1124,7 @@ public class AnalysisManager implements Runnable {
 						
 				MainManager.logMessage("#AnalysisManager: Prediction failed");
 				e.printStackTrace();
-						
-			}
+			}			
 			
 			if((!MainManager.isShutdown()) && (!MainManager.isAnalysisShutdown()))
 			{
@@ -1147,6 +1146,7 @@ public class AnalysisManager implements Runnable {
 		}
 		
 		MainManager.logMessage("#AnalysisManager: Shutting down ...");
+		
 		
 	}
 	
@@ -1423,4 +1423,112 @@ public class AnalysisManager implements Runnable {
 		
 	}
 	*/
+	
+	//Depricated code
+	/*
+	
+	//Function is called to collate the tempory store and save the average data.
+	public void takeAverageAndSave()
+	{
+		
+		float[] average = new float[1600];
+		
+		for(int i = 0; i < 1600; i++)	{ average[i] = 0;	}
+		
+		try 
+		{
+
+			BufferedReader br = new BufferedReader(new FileReader(tempStore.getAbsoluteFile()));
+			String Temp1 = br.readLine();
+			br.close();
+			String[] Temp2 = Temp1.split(" ");
+			int num = (int) Temp2.length/1600;
+			
+			for(int i = 0; i < num; i++)
+			{
+				
+				for(int j = 0; j < 1600; j++)
+				{
+					
+					average[j] += Float.valueOf(Temp2[j + i*1600])/num;
+					
+				}
+				
+			}
+			
+			tempStore.delete();
+			tempStore.createNewFile();
+ 
+		} 
+		catch (Exception e) 
+		{
+			
+			MainManager.logMessage("#AnalysisManager: Could not read ./res/Analysis/tempStore.txt, recommend shut down.");
+		
+		}
+		
+		String content = new String();
+		
+		for (int i = 0; i < 1600; i++)
+		{
+			
+			content += average[i]; 
+			
+			if(i != 1599)
+				content += " ";
+			else
+				content += " - ";
+			
+		}
+		
+		
+		try{
+		
+			BufferedWriter currentBW = new BufferedWriter(new FileWriter(currentStore.getAbsoluteFile(), true));
+			currentBW.write(content);
+			currentBW.close();
+			
+			
+		} catch (Exception e)
+		{
+			
+			MainManager.logMessage("#AnalysisManager: Failed to save current week average of model.");
+			
+		}
+		
+	}
+	
+		//Function is called to save current model to a tempory store.
+	public void recordData(float[] data)
+	{
+		
+		String content = new String();
+		
+		for (int i = 0; i < 1600; i++)
+		{
+			
+			content += data[i] + " ";
+			
+		}
+		
+		
+		
+		try{
+		
+			BufferedWriter tempBW = new BufferedWriter(new FileWriter(tempStore.getAbsoluteFile(), true));
+			tempBW.write(content);
+			tempBW.close();
+			
+			
+		} catch (Exception e)
+		{
+			
+			MainManager.logMessage("#AnalysisManager: Failed to save current itteration of model.");
+			
+		}
+		
+	}
+	
+	 */
+	
 }

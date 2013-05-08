@@ -467,7 +467,7 @@ public class MainManager
 				}
 			}
 			
-			else if(command.contains("all"))
+			else if(command.contains("system"))
 			{
 				shutdown();
 			}
