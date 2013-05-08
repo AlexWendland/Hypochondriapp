@@ -19,7 +19,7 @@
     <target name="jar">
         <jar destfile="server.jar" basedir="bin">
             <manifest>
-                <attribute name="Main-Class" value="oata.MainManager"/>
+                <attribute name="Main-Class" value="MainManager"/>
             </manifest>
         </jar>
     </target>
