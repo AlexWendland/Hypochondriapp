@@ -19,7 +19,7 @@
     <target name="jar">
         <jar destfile="server.jar" basedir="bin">
             <manifest>
-                <attribute name="Main-Class" value="MainManager"/>
+                <attribute name="Main-Class" value="com.group19.hypochondriapp.MainManager"/>
             </manifest>
         </jar>
     </target>
