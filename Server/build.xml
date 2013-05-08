@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+
+    <target name="clean">
+        <delete dir="~/server/classes"/>
+    	<delete dir="~/server/res"/>
+    	<delete file="~/server/server.jar"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="~/server/classes"/>
+    	<path id="classpath">
+    		<fileset dir="~/jars/">
+    			<include name="*.jar"/>
+    		</fileset>
+    	</path>
+        <javac srcdir="~/git/Server/src/com/group19/hypochondriapp" destdir="~server/classes" classpathref="classpath"/>
+    </target>
+
+    <target name="jar">
+        <mkdir dir="~/server/"/>
+    	<copy file="~/git/Server/res" todir="~/server"/>
+        <jar destfile="~/server/server.jar" basedir="~/server/classes">
+            <manifest>
+                <attribute name="Main-Class" value="oata.MainManager"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run">
+    	<path id="classpath">
+    		<fileset dir="~/jars/">
+    			<include name="*.jar"/>
+    		</fileset>
+    	</path>
+        <java jar="~/server/server.jar" fork="true" classpathref="classpath"/>
+    </target>
+
+</project>
