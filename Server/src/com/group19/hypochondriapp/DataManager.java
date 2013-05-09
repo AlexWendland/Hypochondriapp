@@ -192,9 +192,7 @@ public class DataManager
 		currentStations.clear();
 		MainManager.logMessage("#DataManager: Current working directory " + System.getProperty("user.dir"));
 		String path = "./res/TravelManager/CSVTravelData/" + direction + time + ".xls.csv";
-		//path = path.replaceAll("/", System.getProperty("path.seperator"));
 		File csv = new File(path);
-		//MainManager.logMessage("#DataManager: " + csv.getAbsolutePath());
 		BufferedReader reader = null;
 		
 		try
@@ -279,8 +277,7 @@ public class DataManager
 		}
 		catch(FileNotFoundException e)
 		{
-			//MainManager.logMessage("#DataManager: Google Insights does not exist for that year, try updating GoogleManager");
-			//e.printStackTrace();
+			MainManager.logMessage("#DataManager: Google Insights does not exist for that year, try updating GoogleManager");
 			return -1;
 		}
 		
@@ -309,6 +306,17 @@ public class DataManager
 						break;
 					}
 				}
+			}
+			
+			if(date.get(Calendar.MONTH) == Calendar.JANUARY)
+			{
+				date.set(Calendar.YEAR, date.get(Calendar.YEAR) - 1);
+				returnVal = getGoogleInsights(date);
+			}
+			else if(date.get(Calendar.MONTH) == Calendar.DECEMBER)
+			{
+				date.set(Calendar.YEAR, date.get(Calendar.YEAR) + 1);
+				returnVal = getGoogleInsights(date);
 			}
 			
 		}
