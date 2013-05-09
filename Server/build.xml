@@ -3,7 +3,7 @@
 
     <target name="clean">
         <delete dir="bin"/>
-    	<delete file="server.jar"/>
+    	<delete dir="jar"/>
     </target>
 
     <target name="compile">
@@ -17,17 +17,20 @@
     </target>
 
     <target name="jar">
-        <jar destfile="server.jar" basedir="bin">
+    	<mkdir dir="jar"/>
+        <jar destfile="jar/server.jar" basedir="bin">
             <manifest>
                 <attribute name="Main-Class" value="com.group19.hypochondriapp.MainManager"/>
             </manifest>
         </jar>
-    	<chmod file="server.jar" perm="700"/>
+    	<chmod file="jar/server.jar" perm="700"/>
     </target>
 
     <target name="run">
     	<path id="classpath">
-    		<include name="server.jar"/>
+    		<fileset dir="jar">
+    			<include name="server.jar"/>
+    		</fileset>
     		<fileset dir="jars">
     			<include name="*.jar"/>
     		</fileset>
