@@ -375,7 +375,7 @@ public class AnalysisManager implements Runnable {
 		} else
 		{
 			
-			MainManager.logMessage("#AnalysisManager: Train station not in map.");
+			//MainManager.logMessage("#AnalysisManager: Train station not in map.");
 
 		}
 		
