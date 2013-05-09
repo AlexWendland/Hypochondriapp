@@ -22,15 +22,17 @@
                 <attribute name="Main-Class" value="com.group19.hypochondriapp.MainManager"/>
             </manifest>
         </jar>
+    	<chmod file="server.jar" perm="700"/>
     </target>
 
     <target name="run">
     	<path id="classpath">
+    		<include name="server.jar"/>
     		<fileset dir="jars">
     			<include name="*.jar"/>
     		</fileset>
     	</path>
-        <java jar="server.jar" fork="true" classpathref="classpath"/>
+        <java classname="com.group19.hypochondriapp.MainManager" fork="true" classpathref="classpath"/>
     </target>
 
 </project>
