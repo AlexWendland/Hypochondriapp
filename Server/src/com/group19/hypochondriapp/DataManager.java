@@ -192,8 +192,8 @@ public class DataManager
 		currentStations.clear();
 		MainManager.logMessage("#DataManager: Current working directory " + System.getProperty("user.dir"));
 		String s = System.getProperty("path.separator");
-		File csv = new File("." + s + "res" + s + "TravelManager" + s + "CSVTravelData" + s + direction + time + ".xls.csv");
-		MainManager.logMessage("#DataManager: " + csv.getAbsolutePath());
+		File csv = new File(s + "res" + s + "TravelManager" + s + "CSVTravelData" + s + direction + time + ".xls.csv");
+		//MainManager.logMessage("#DataManager: " + csv.getAbsolutePath());
 		BufferedReader reader = null;
 		
 		try
@@ -202,7 +202,7 @@ public class DataManager
 		}
 		catch(FileNotFoundException e)
 		{
-			MainManager.logMessage("#DataManager: Could not find file \"" + csv.getPath() + "\"");
+			MainManager.logMessage("#DataManager: Could not find file \"" + csv.getAbsolutePath() + "\"");
 			e.printStackTrace();
 			return;
 		}
