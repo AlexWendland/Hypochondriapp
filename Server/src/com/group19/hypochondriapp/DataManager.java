@@ -263,8 +263,9 @@ public class DataManager
 	//Gets the insight for the given day
 	//Probably contains a bug where record will not be found as 01-01-2011 is in flu2010.csv
 	//Returns -1 if nothing found in file
-	public byte getGoogleInsights(Calendar date)
+	public byte getGoogleInsights(Calendar newDate)
 	{
+		Calendar date = newDate;
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 		Byte returnVal = -1;
 		String dir = new String("./res/GoogleManager/flu" + date.get(Calendar.YEAR) + ".csv");
