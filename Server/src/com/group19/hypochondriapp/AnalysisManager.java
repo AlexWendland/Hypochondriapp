@@ -16,7 +16,6 @@ public class AnalysisManager implements Runnable {
 
 	//Model variables.
 	private int[] pop;
-	private int[] setPop;
 	private float[] ill;
 	private byte[] borough;
 	
@@ -26,9 +25,10 @@ public class AnalysisManager implements Runnable {
 	
 	//Files used and constants.
 	File dataStore = new File("./res/AnalysisManager/DataStore.txt");
-	public static final int TWITSCALAR = 100;
+	public static final short TWITSCALAR = 100;
 	public static final byte TWITTER_CELLS = 100;  
-	public static final int DAY_OF_UPDATE = 0;
+	public static final byte DAY_OF_UPDATE = 0;
+	public static final short CELL_EFFECT = 1000;
 	
 	//Initiation of the model.
 	public void init() 
@@ -36,25 +36,24 @@ public class AnalysisManager implements Runnable {
 		
 		int[] popDen = MainManager.getDataManager().getBoroughDensities();
 		borough = MainManager.getDataManager().getBoroughPlaces();	
-		setPop = new int[1600];
 		ill = new float[1600];
+		pop = new int[1600];
 		updated = true;
 		
 		for(int i = 0; i < 1600; i++)	
 		{ 
 			
-			setPop[i] = popDen[borough[i] - 1];	
+			pop[i] = popDen[borough[i] - 1];	
 			ill[i] = 0;
 			
 		}
-		
-		pop = setPop;
 		
 		try
 		{
 			
 			if (!dataStore.exists()) 
 				dataStore.createNewFile();
+			
 		
 		} catch (Exception e)
 		{
@@ -67,8 +66,37 @@ public class AnalysisManager implements Runnable {
 	}
 	
 	
+	//Gets the cells around any cell
+	public short[] getAroundCells(int num)
+	{
+		
+		short[] returnedCells = new short[8];
+		
+		double y = ((int)(num/40))*0.01 + 51.3 + 0.005;
+		double x = (num%40)*0.02 - 0.5 + 0.01;		
+			
+		returnedCells[0] = (short) cordConv((float) (y - 0.01), (float) (x + 0.02));
+		returnedCells[1] = (short) cordConv((float) (y), (float) (x + 0.02));
+		returnedCells[2] = (short) cordConv((float) (y + 0.01), (float) (x + 0.02));
+		returnedCells[3] = (short) cordConv((float) (y - 0.01), (float) (x));
+		returnedCells[4] = (short) cordConv((float) (y + 0.01), (float) (x));
+		returnedCells[5] = (short) cordConv((float) (y - 0.01), (float) (x - 0.02));
+		returnedCells[6] = (short) cordConv((float) (y), (float) (x - 0.02));
+		returnedCells[7] = (short) cordConv((float) (y + 0.01), (float) (x - 0.02));
+		
+		return returnedCells;
+		
+	}
+	
 	//Resets the model to the old pop.
-	public void resetPop()	{ pop = setPop;	}
+	public void resetPop()	
+	{ 
+		
+		int[] popDen = MainManager.getDataManager().getBoroughDensities();
+		for (int i = 0; i < 1600; i++)
+			pop[i] = popDen[borough[i] - 1];		
+		
+	}
 	
 	
 	//Converts from Long and latitude to cell position.
@@ -110,7 +138,7 @@ public class AnalysisManager implements Runnable {
 		catch (Exception e)	{ return 0;	}
 		
 	}
-
+	
 	
 	//Finds the cells allocated to a certain borough and returns them in a array.
 	public int[] findBoroughCells(int boroughNum)
@@ -314,57 +342,35 @@ public class AnalysisManager implements Runnable {
 		if (pos > -1)
 		{
 			
-			for(int i = -1; i < 2; i++)
+			short[] cellAround = getAroundCells(pos);
+			
+			int count = 0;
+			
+			for(int i = 0; i < cellAround.length; i++)
 			{
 				
-				int a = cordConv((float) (y + (i*0.01)), (float) (x + 0.02));
-				
-				if(a > -1)
+				if(cellAround[i] > -1)
 				{
 					
-					pop[a] += ((int)num/12);
-					if(pop[a] < 0)
-						pop[a] = 0;
-					ill[a] += (illMove);
-					if(ill[a] < 0)
-						ill[a] = 0;
+					pop[cellAround[i]] += ((int)num/12);
+					if(pop[cellAround[i]] < 0)
+						pop[cellAround[i]] = 0;
+					ill[cellAround[i]] += (illMove);
+					if(ill[cellAround[i]] < 0)
+						ill[cellAround[i]] = 0;
 					
-				}
-				
-				int b = cordConv((float) (y + (i*0.01)), x);
-				
-				if(b > -1)
-				{
-					if (i != 0)
-						pop[b] += ((int)num/12);
-					else
-						pop[b] += ((int)num/3);
-					if(pop[b] < 0)
-						pop[b] = 0;
-					if(i != 0)
-						ill[b] += (illMove);
-					else
-						ill[b] += (illMove)*4;
-					if(ill[b] < 0)
-						ill[b] = 0;
-					
-				}
-				
-				int c = cordConv((float) (y + (i*0.01)),(float) (x - 0.02));
-				
-				if(c > -1)
-				{
-					
-					pop[c] += ((int)num/9);
-					if(pop[c] < 0)
-						pop[c] = 0;
-					ill[c] += (illMove);
-					if(ill[c] < 0)
-						ill[c] = 0;
+					count++;
 					
 				}
 				
 			}
+			
+			pop[pos] += ((int)(num*(12-count))/12);
+			if(pop[pos] < 0)
+				pop[pos] = 0;
+			ill[pos] += (illMove)*(12-count);
+			if(ill[pos] < 0)
+				ill[pos] = 0;
 			
 		} else
 		{
@@ -387,7 +393,7 @@ public class AnalysisManager implements Runnable {
 		
 		currentDate.add(Calendar.WEEK_OF_YEAR, -8);
 		
-		while (MainManager.getDataManager().getGoogleInsights(currentDate) != -1)
+		while ((MainManager.getDataManager().getGoogleInsights(currentDate) != -1))
 		{
 			
 			currentDate.add(Calendar.WEEK_OF_YEAR, 5);
@@ -576,257 +582,6 @@ public class AnalysisManager implements Runnable {
 	}
 	
 	
-	//Function is called to add the travel data to the model.
-	public void addTransport(Calendar date)
-	{
-		int Day = date.get(Calendar.DAY_OF_WEEK);
-		int MinRep = (int)(date.get(Calendar.MINUTE)/15);
-		int HourRep = date.get(Calendar.HOUR) - 2;
-		float average = getAverageIll();
-		
-		if(((Day == 0) && (HourRep >= 0)) || ((Day == 1) && (HourRep < 0)))
-		{
-			
-			MainManager.getDataManager().loadStationTravel(DataManager.EXIT, DataManager.SUN);
-			
-			for (int i = 0; i < 269; i++) 
-			{
-				
-				StationInfo currentStation = MainManager.getDataManager().getNextStation();
-				
-				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
-				{
-				
-					for(int j = 0; j < 4*((HourRep+24)%24) + MinRep; j++)
-					{
-						
-						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
-						
-					}
-					
-				}
-				
-			}
-			
-			MainManager.getDataManager().loadStationTravel(DataManager.ENTER, DataManager.SUN);
-			
-			for (int i = 0; i < 269; i++) 
-			{
-				
-				StationInfo currentStation = MainManager.getDataManager().getNextStation();
-				
-				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
-				{
-				
-					for(int j = 0; j < 4*((HourRep+24)%24) + MinRep; j++)
-					{
-						
-						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
-						
-					}
-					
-				}
-				
-			}
-			
-		}else if(((Day == 7) && (HourRep >= 0)) || ((Day == 0) && (HourRep < 0)))
-		{
-			
-			MainManager.getDataManager().loadStationTravel(DataManager.EXIT, DataManager.SAT);
-			
-			for (int i = 0; i < 269; i++) 
-			{
-				
-				StationInfo currentStation = MainManager.getDataManager().getNextStation();
-				
-				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
-				{
-				
-					for(int j = 0; j < 4*((HourRep+24)%24) + MinRep; j++)
-					{
-						
-						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
-						
-					}
-					
-				}
-				
-			}
-			
-			MainManager.getDataManager().loadStationTravel(DataManager.ENTER, DataManager.SAT);
-			
-			for (int i = 0; i < 269; i++) 
-			{
-				
-				StationInfo currentStation = MainManager.getDataManager().getNextStation();
-				
-				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
-				{
-				
-					for(int j = 0; j < 4*((HourRep+24)%24) + MinRep; j++)
-					{
-						
-						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
-						
-					}
-					
-				}
-				
-			}
-			
-		} else
-		{
-			
-			MainManager.getDataManager().loadStationTravel(DataManager.EXIT, DataManager.WEEK);
-			
-			for (int i = 0; i < 269; i++) 
-			{
-				
-				StationInfo currentStation = MainManager.getDataManager().getNextStation();
-				
-				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
-				{
-				
-					for(int j = 0; j < 4*((HourRep+24)%24) + MinRep; j++)
-					{
-						
-						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
-						
-					}
-				
-				}
-					
-			}
-			
-			MainManager.getDataManager().loadStationTravel(DataManager.ENTER, DataManager.WEEK);
-			
-			for (int i = 0; i < 269; i++) 
-			{
-				
-				StationInfo currentStation = MainManager.getDataManager().getNextStation();
-				
-				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
-				{
-				
-					for(int j = 0; j < 4*((HourRep+24)%24) + MinRep; j++)
-					{
-						
-						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
-						
-					}
-					
-				}
-				
-			}
-			
-		}
-		
-	}
-
-	
-	//Function is called to get the information about the stations that will be sent over the network.
-	public short[] getTransportData(Calendar date)
-	{
-		
-		short[] currentTransport = new short[538];
-		
-		int Day = date.get(Calendar.DAY_OF_WEEK);
-		int MinRep = (int)(date.get(Calendar.MINUTE)/15);
-		int HourRep = date.get(Calendar.HOUR) - 2;
-		
-		if(((Day == 0) && (HourRep >= 0)) || ((Day == 1) && (HourRep < 0)))
-		{
-			
-			MainManager.getDataManager().loadStationTravel(DataManager.EXIT, DataManager.SUN);
-			
-			for (int i = 0; i < 269; i++) 
-			{
-				
-				StationInfo currentStation = MainManager.getDataManager().getNextStation();
-				if ((currentStation != null) && (currentStation.people != null) && (currentStation.people.length > (24*4 - 1)))
-					currentTransport[i*2+1] = (short) currentStation.people[4*((HourRep+24)%24) + MinRep];
-				else
-					currentTransport[i*2+1] = 0;
-				
-			}
-			
-			MainManager.getDataManager().loadStationTravel(DataManager.ENTER, DataManager.SUN);
-			
-			for (int i = 0; i < 269; i++) 
-			{
-				
-				StationInfo currentStation = MainManager.getDataManager().getNextStation();
-				if ((currentStation != null) && (currentStation.people != null) && (currentStation.people.length > (24*4 - 1)))
-					currentTransport[i*2] = (short) currentStation.people[4*((HourRep+24)%24) + MinRep];
-					currentTransport[i*2] = 0;
-				
-			}
-			
-		}else if(((Day == 7) && (HourRep >= 0)) || ((Day == 0) && (HourRep < 0)))
-		{
-			
-			MainManager.getDataManager().loadStationTravel(DataManager.EXIT, DataManager.SAT);
-			
-			for (int i = 0; i < 269; i++) 
-			{
-				
-				StationInfo currentStation = MainManager.getDataManager().getNextStation();
-				if ((currentStation != null) && (currentStation.people != null) && (currentStation.people.length > (24*4 - 1)))
-					currentTransport[i*2+1] = (short) currentStation.people[4*((HourRep+24)%24) + MinRep];
-				else
-					currentTransport[i*2+1] = 0;
-				
-			}
-			
-			MainManager.getDataManager().loadStationTravel(DataManager.ENTER, DataManager.SAT);
-			
-			for (int i = 0; i < 269; i++) 
-			{
-				
-				StationInfo currentStation = MainManager.getDataManager().getNextStation();
-				if ((currentStation != null) && (currentStation.people != null) && (currentStation.people.length > (24*4 - 1)))
-					currentTransport[i*2] = (short) currentStation.people[4*((HourRep+24)%24) + MinRep];
-				else
-					currentTransport[i*2] = 0;
-				
-			}
-			
-		} else
-		{
-			
-			MainManager.getDataManager().loadStationTravel(DataManager.EXIT, DataManager.WEEK);
-			
-			for (int i = 0; i < 269; i++) 
-			{
-				
-				StationInfo currentStation = MainManager.getDataManager().getNextStation();
-				if ((currentStation != null) && (currentStation.people != null) && (currentStation.people.length > (24*4 - 1)))
-					currentTransport[i*2+1] = (short) currentStation.people[4*((HourRep + 24)%24) + MinRep];
-				else
-					currentTransport[i*2+1] = 0;
-				
-			}
-			
-			MainManager.getDataManager().loadStationTravel(DataManager.ENTER, DataManager.WEEK);
-			
-			for (int i = 0; i < 269; i++) 
-			{
-				
-				StationInfo currentStation = MainManager.getDataManager().getNextStation();
-				if ((currentStation != null) && (currentStation.people != null) && (currentStation.people.length > (24*4 - 1)))
-					currentTransport[i*2] = (short) currentStation.people[4*((HourRep+24)%24) + MinRep];
-				else
-					currentTransport[i*2] = 0;
-				
-			}
-			
-		}
-		
-		return currentTransport;
-		
-	}
-	
-	
 	//Add the NHS data.
 	public void addNHS()
 	{
@@ -843,156 +598,617 @@ public class AnalysisManager implements Runnable {
 	}
 	
 	
+	public float[] backtrackTravel()
+	{
+		
+		Calendar date = Calendar.getInstance();
+	    date.setTime(new Date());
+		
+	    float[] stationPositions = new float[269*2];
+		int Day = date.get(Calendar.DAY_OF_WEEK);
+		int MinRep = (int)(date.get(Calendar.MINUTE)/15);
+		int HourRep = date.get(Calendar.HOUR_OF_DAY) - 2;
+		float average = getAverageIll();
+		
+		for(int i = 0; i < 269*2; i++)
+			stationPositions[i] = 0;
+		
+		if(((Day == 0) && (HourRep >= 0)) || ((Day == 1) && (HourRep < 0)))
+		{
+			
+			MainManager.getDataManager().loadStationTravel(DataManager.EXIT, DataManager.SUN);
+			
+			for (int i = 0; i < 269; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				
+				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
+				{
+				
+					for(int j = 0; j < 4*((HourRep+24)%24) + MinRep - 1; j++)
+					{
+						
+						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+						
+					}
+					
+					stationPositions[i*2] = currentStation.coordinates[0];
+					stationPositions[i*2 + 1] = currentStation.coordinates[1];
+					
+				}
+				
+			}
+			
+			MainManager.getDataManager().loadStationTravel(DataManager.ENTER, DataManager.SUN);
+			
+			for (int i = 0; i < 269; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				
+				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
+				{
+				
+					for(int j = 0; j < 4*((HourRep+24)%24) + MinRep - 1; j++)
+					{
+						
+						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+						
+					}
+					
+				}
+				
+			}
+			
+		}else if(((Day == 7) && (HourRep >= 0)) || ((Day == 0) && (HourRep < 0)))
+		{
+			
+			MainManager.getDataManager().loadStationTravel(DataManager.EXIT, DataManager.SAT);
+			
+			for (int i = 0; i < 269; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				
+				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
+				{
+				
+					for(int j = 0; j < 4*((HourRep+24)%24) + MinRep - 1; j++)
+					{
+						
+						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+						
+					}
+					
+					stationPositions[i*2] = currentStation.coordinates[0];
+					stationPositions[i*2 + 1] = currentStation.coordinates[1];
+					
+				}
+				
+			}
+			
+			MainManager.getDataManager().loadStationTravel(DataManager.ENTER, DataManager.SAT);
+			
+			for (int i = 0; i < 269; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				
+				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
+				{
+				
+					for(int j = 0; j < 4*((HourRep+24)%24) + MinRep - 1; j++)
+					{
+						
+						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+						
+					}
+					
+				}
+				
+			}
+			
+		} else
+		{
+			
+			MainManager.getDataManager().loadStationTravel(DataManager.EXIT, DataManager.WEEK);
+			
+			for (int i = 0; i < 269; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				
+				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
+				{
+				
+					for(int j = 0; j < 4*((HourRep+24)%24) + MinRep - 1; j++)
+					{
+						
+						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+						
+					}
+					
+					stationPositions[i*2] = currentStation.coordinates[0];
+					stationPositions[i*2 + 1] = currentStation.coordinates[1];
+				
+				}
+					
+			}
+			
+			MainManager.getDataManager().loadStationTravel(DataManager.ENTER, DataManager.WEEK);
+			
+			for (int i = 0; i < 269; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				
+				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
+				{
+				
+					for(int j = 0; j < 4*((HourRep+24)%24) + MinRep - 1; j++)
+					{
+						
+						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+						
+					}
+					
+				}
+				
+			}
+			
+		}
+		
+		return stationPositions;
+		
+	}
+	
+	
+	//Allocates relivant station data
+	public int[] setStation(int[] stationData, String day)
+	{
+		
+		Calendar currentDate = Calendar.getInstance();
+	    currentDate.setTime(new Date());
+	    int[] returnData = new int[24*8 + 7];
+	    
+		for(int i = 0; i < 24*4*14; i++)
+		{
+			
+			if(i < 24*8 + 7)
+			{
+				
+				returnData[i] = 0;
+				
+			}
+			
+			int tempData = 0;
+			
+			int Day = currentDate.get(Calendar.DAY_OF_WEEK);
+			int MinRep = (int)(currentDate.get(Calendar.MINUTE)/15);
+			int HourRep = currentDate.get(Calendar.HOUR_OF_DAY) - 2;
+			
+			currentDate.add(Calendar.MINUTE, 15);
+			
+			if(((Day == 0) && (HourRep >= 0)) || ((Day == 1) && (HourRep < 0)))
+			{
+				
+				if(day == DataManager.SUN)
+				{
+					
+					tempData = stationData[((HourRep + 24)%24)*4 + MinRep];
+					
+				}
+				
+			}else if(((Day == 7) && (HourRep >= 0)) || ((Day == 0) && (HourRep < 0)))
+			{
+				
+				if(day == DataManager.SAT)
+				{
+					
+					tempData = stationData[((HourRep + 24)%24)*4 + MinRep];
+					
+				}
+				
+			} else
+			{
+				
+				if(day == DataManager.WEEK)
+				{
+					
+					tempData = stationData[((HourRep + 24)%24)*4 + MinRep];
+					
+				}
+				
+			}
+			
+			if(i < 24*4)
+				returnData[i] = tempData;
+			else if (i < 24*4*2)
+				returnData[24*4 + (int)(i - 24*4)/2] += tempData;
+			else if (i < 24*4*3)
+				returnData[24*6 + (int)(i - 24*4*2)/4] += tempData;
+			else if (i < 24*4*4)
+				returnData[24*7 + (int)(i - 24*4*3)/8] += tempData;
+			else if (i < 24*4*5)
+				returnData[24*7 + 12 + (int)(i - 24*4*4)/16] += tempData;
+			else if (i < 24*4*6)
+				returnData[24*7 + 18 + (int)(i - 24*4*5)/24] += tempData;
+			else if (i < 24*4*7)
+				returnData[24*7 + 22 + (int)(i - 24*4*6)/48] += tempData;
+			else
+				returnData[24*8 + (int)(i - 24*4*7)/96] += tempData;
+			
+			
+		}
+	    
+	    return returnData;
+		
+	}
+	
+	
+	//Gets the travel data I require to send.
+	public int[][] getTravel()
+	{
+		
+		int[][] currentTransport = new int[269*2][24*8 + 7];
+		
+		for(int k = 0; k < 6; k++)
+		{
+			
+			String day = new String();
+			String inOut = new String();
+			
+			if((int)(k/2) == 0)
+				day = DataManager.SUN;
+			
+			if((int)(k/2) == 1)
+				day = DataManager.WEEK;
+				
+			else
+				day = DataManager.SAT;
+			
+			if(k%2 == 0)
+				inOut = DataManager.ENTER;
+			
+			else
+				inOut = DataManager.EXIT;
+			
+			MainManager.getDataManager().loadStationTravel(inOut, day);
+		
+			for (int i = 0; i < 269; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				
+				if ((currentStation != null) && (currentStation.people != null) && (currentStation.people.length > (24*4 - 1)))
+				{
+					
+					int[] temp = setStation(currentStation.people, day);
+					
+					for(int j = 0; j < 24*8 + 7; j++)
+					{
+						currentTransport[i*2 + (k%2)][j] += temp[j];
+					}
+					
+				}
+				else
+				{
+					for(int j = 0; j < 24*8 + 7; j++)
+					{
+						
+						currentTransport[i*2 + (k%2)][j] += 0;
+						
+					}
+				}		
+			}
+	    
+		}
+			
+	    return currentTransport;
+		
+	}
+	
 	//If the model is required to generate a new packet for the app, this will run.
 	public void update()
 	{
 		
 		ill = new float[1600];
 		
-		for(int i = 0; i < 1600; i++) { ill[i] = 0;	}
+		resetPop();
 		
-		float[][] dataToBeSent = new float[24*8+7][1600];
+		for(int i = 0; i < 1600; i++) { ill[i] = 0;	}
 		
 	    Calendar currentDate = Calendar.getInstance();
 	    currentDate.setTime(new Date());
 		
 		setTweets();
 		addNHS();
-		addTransport(currentDate);
 		
-		dataToBeSent[0] = ill;
-		
-		float[][] ratioState = new float[24*8+7][1600];
+		float[][] change = new float[2][1600];
 		
 		for(int i = 0; i < 1600; i++)
 		{
 			
-			ratioState[0][i] = (ill[i]/pop[i])*100;
-			
-		}
-		
-		recordData(currentDate);
-		
-		resetPop();
-		
-		float[][] PredictedState = new float[24*8+7][1600];
-		
-		for(int i = 0; i < 24*8 + 7; i++)
-		{
-			
-			for(int j = 0; j < 1600; j++)
-			{
-				
-				PredictedState[i][j] = 0;
-				
-			}
-			
-		}
-		
-		for(int i = 0; i < 1600; i++)
-		{
+			float[] predictedData = prediction(getPreviousData(i), currentDate, borough[i]);
 			
 			currentDate = Calendar.getInstance();
 		    currentDate.setTime(new Date());
 			
-			float[] predictedData = prediction(getPreviousData(i), currentDate, borough[i]);
-			
-			for(int j = 0; j < 24*4; j++)
-			{
-				
-				PredictedState[j][i] = ill[i]*((7*24*4-j)/7*24*4) + predictedData[0]*((j)/7*24*4);
-				
-			}
-			
-			for(int j = 0; j < 24*2; j++)
-			{
-				
-				PredictedState[24*4 + j][i] = ill[i]*((7*24*2-(24*2 + j))/7*24*2) + predictedData[0]*((24*2 + j)/7*24*2);
-				
-			}
-			
-			for(int j = 0; j < 24; j++)
-			{
-				
-				PredictedState[24*6 + j][i] = ill[i]*((7*24-(24*2 + j))/7*24) + predictedData[0]*((24*2 + j)/7*24);
-				
-			}
-			
-			for(int j = 0; j < 12; j++)
-			{
-				
-				PredictedState[24*7 + j][i] = ill[i]*((7*24-(24*3 + 2*j))/7*24) + predictedData[0]*((24*3 + 2*j)/7*24);
-				
-			}
-			
-			for(int j = 0; j < 6; j++)
-			{
-				
-				PredictedState[24*7 + 12 + j][i] = ill[i]*((7*24-(24*4 + 4*j))/7*24) + predictedData[0]*((24*4 + 4*j)/7*24);
-				
-			}
-			
-			for(int j = 0; j < 4; j++)
-			{
-				
-				PredictedState[24*7 + 18 + j][i] = ill[i]*((7*24-(24*5 + 6*j))/7*24) + predictedData[0]*((24*5 + 6*j)/7*24);
-				
-			}
-			
-			for(int j = 0; j < 2; j++)
-			{
-				
-				PredictedState[24*7 + 22 + j][i] = ill[i]*((7*24-(24*6 + 12*j))/7*24) + predictedData[0]*((24*6 + 12*j)/7*24);
-				
-			}
-			
-			for(int j = 0; j < 7; j++)
-			{
-				
-				PredictedState[24*8 + j][i] = predictedData[0]*((7-j)/7) + predictedData[1]*(j/7);
-				
-			}
+			change[0][i] = ((ill[i] - predictedData[0])/(7*24*4 - 1));
+			change[1][i] = (predictedData[0] - predictedData[1])/7;
 			
 		}
 		
-		currentDate = Calendar.getInstance();
-	    currentDate.setTime(new Date());
-	    short[][] transportMove = new short[24*8+7][269*2];
-	    transportMove[0] = getTransportData(currentDate);
-	    
-		for(int i = 1; i < 8*24 + 7; i++)
+		int[][] transportData = getTravel();
+		float[] stationPosition = backtrackTravel();
+		float[][] dataToBeSent = new float[24*8+7][1600];
+		float[][] ratioData = new float[24*8+7][1600];
+		dataToBeSent[0] = ill;
+		
+		recordData(currentDate);
+		
+		for(int i = 0; i < 1600; i++)
+			ratioData[0][i] = ill[i]/pop[i];
+			
+		for(int i = 1; i < 24*8 + 7; i++)
 		{
 			
 			if(i < 24*4)
-				currentDate.add(Calendar.MINUTE, 15);
-			else if (i < 24*6)
-				currentDate.add(Calendar.MINUTE, 30);
-			else if (i < 24*7)
-				currentDate.add(Calendar.HOUR, 1);
-			else if (i < 24*7 + 12)
-				currentDate.add(Calendar.HOUR, 2);
-			else if (i < 27*7 + 18)
-				currentDate.add(Calendar.HOUR, 4);
-			else if (i < 27*7 + 22)
-				currentDate.add(Calendar.HOUR, 6);
-			else if (i < 24*8)
-				currentDate.add(Calendar.HOUR, 12);
-			else
-				currentDate.add(Calendar.DAY_OF_YEAR, 1);
-			
-			ill = PredictedState[i];
-			addTransport(currentDate);
-			dataToBeSent[i] = ill;
-			
-			for(int j = 0; j < 1600; j++)
 			{
 				
-				ratioState[i][j] = (ill[j]/pop[j])*100;
+				for(int j = 0; j < 1600; j++)
+				{
+					
+					dataToBeSent[i][j] = (ill[j] - change[0][j])*CELL_EFFECT;
+					
+					short[] AroundCells = getAroundCells(j);
+					
+					int count = 0;
+							
+					for(int k = 0; k < AroundCells.length; k++)
+					{
+						
+						if(AroundCells[k] > -1)
+						{
+							
+							count++;
+							dataToBeSent[i][j] += ill[AroundCells[k]];
+							
+						}
+						
+					}
+					
+					dataToBeSent[i][j] /= (CELL_EFFECT + count);
+					
+				}
+				
+			}
+			else if (i < 24*6)
+			{
+				
+				for(int j = 0; j < 1600; j++)
+				{
+					
+					dataToBeSent[i][j] = (ill[j] - 2*change[0][j])*CELL_EFFECT;
+					
+					short[] AroundCells = getAroundCells(j);
+					
+					int count = 0;
+							
+					for(int k = 0; k < AroundCells.length; k++)
+					{
+						
+						if(AroundCells[k] > -1)
+						{
+							
+							count++;
+							dataToBeSent[i][j] += 2*ill[AroundCells[k]];
+							
+						}
+						
+					}
+					
+					dataToBeSent[i][j] /= (CELL_EFFECT + 2*count);
+					
+				}
+				
+			}
+			else if (i < 24*7)
+			{
+				
+				for(int j = 0; j < 1600; j++)
+				{
+					
+					dataToBeSent[i][j] = (ill[j] - 4*change[0][j])*CELL_EFFECT;
+					
+					short[] AroundCells = getAroundCells(j);
+					
+					int count = 0;
+							
+					for(int k = 0; k < AroundCells.length; k++)
+					{
+						
+						if(AroundCells[k] > -1)
+						{
+							
+							count++;
+							dataToBeSent[i][j] += 4*ill[AroundCells[k]];
+							
+						}
+						
+					}
+					
+					dataToBeSent[i][j] /= (CELL_EFFECT + 4*count);
+					
+				}
+				
+			}
+			else if (i < 24*7 + 12)
+			{
+				
+				for(int j = 0; j < 1600; j++)
+				{
+					
+					dataToBeSent[i][j] = (ill[j] - 8*change[0][j])*CELL_EFFECT;
+					
+					short[] AroundCells = getAroundCells(j);
+					
+					int count = 0;
+							
+					for(int k = 0; k < AroundCells.length; k++)
+					{
+						
+						if(AroundCells[k] > -1)
+						{
+							
+							count++;
+							dataToBeSent[i][j] += 8*ill[AroundCells[k]];
+							
+						}
+						
+					}
+					
+					dataToBeSent[i][j] /= (CELL_EFFECT + 8*count);
+					
+				}
+				
+			}
+			else if (i < 27*7 + 18)
+			{
+			
+				for(int j = 0; j < 1600; j++)
+				{
+					
+					dataToBeSent[i][j] = (ill[j] - 16*change[0][j])*CELL_EFFECT;
+					
+					short[] AroundCells = getAroundCells(j);
+					
+					int count = 0;
+							
+					for(int k = 0; k < AroundCells.length; k++)
+					{
+						
+						if(AroundCells[k] > -1)
+						{
+							
+							count++;
+							dataToBeSent[i][j] += 16*ill[AroundCells[k]];
+							
+						}
+						
+					}
+					
+					dataToBeSent[i][j] /= (CELL_EFFECT + 16*count);
+					
+				}
+				
+			}
+			else if (i < 27*7 + 22)
+			{
+				
+				for(int j = 0; j < 1600; j++)
+				{
+					
+					dataToBeSent[i][j] = (ill[j] - 24*change[0][j])*CELL_EFFECT;
+					
+					short[] AroundCells = getAroundCells(j);
+					
+					int count = 0;
+							
+					for(int k = 0; k < AroundCells.length; k++)
+					{
+						
+						if(AroundCells[k] > -1)
+						{
+							
+							count++;
+							dataToBeSent[i][j] += 24*ill[AroundCells[k]];
+							
+						}
+						
+					}
+					
+					dataToBeSent[i][j] /= (CELL_EFFECT + 24*count);
+					
+				}
+				
+			}
+			else if (i < 24*8)
+			{
+			
+				for(int j = 0; j < 1600; j++)
+				{
+					
+					dataToBeSent[i][j] = (ill[j] - 48*change[0][j])*CELL_EFFECT;
+					
+					short[] AroundCells = getAroundCells(j);
+					
+					int count = 0;
+							
+					for(int k = 0; k < AroundCells.length; k++)
+					{
+						
+						if(AroundCells[k] > -1)
+						{
+							
+							count++;
+							dataToBeSent[i][j] += 48*ill[AroundCells[k]];
+							
+						}
+						
+					}
+					
+					dataToBeSent[i][j] /= (CELL_EFFECT + 48*count);
+					
+				}
+				
+			}
+			else
+			{
+				
+				for(int j = 0; j < 1600; j++)
+				{
+					
+					dataToBeSent[i][j] = (ill[j] - change[1][j])*CELL_EFFECT;
+					
+					short[] AroundCells = getAroundCells(j);
+					
+					int count = 0;
+							
+					for(int k = 0; k < AroundCells.length; k++)
+					{
+						
+						if(AroundCells[k] > -1)
+						{
+							
+							count++;
+							dataToBeSent[i][j] += 96*ill[AroundCells[k]];
+							
+						}
+						
+					}
+					
+					dataToBeSent[i][j] /= (CELL_EFFECT + 96*count);
+					
+				}
 				
 			}
 			
-			resetPop();
-			transportMove[i] = getTransportData(currentDate);
+			ill = dataToBeSent[i];
+			
+			for(int j = 0; j < 269; j++)
+			{	
+				
+				movePeople(stationPosition[j*2], stationPosition[j*2 + 1], transportData[j*2][i], getAverageIll());
+				movePeople(stationPosition[j*2], stationPosition[j*2 + 1], -transportData[j*2 + 1][i], getAverageIll());
+				
+			}
+			
+			dataToBeSent[i] = ill;
+			
+			for(int j = 0; j < 1600; j++)	
+				ratioData[i][j] = ill[j]/pop[j];
 			
 		}
 		
@@ -1013,8 +1229,8 @@ public class AnalysisManager implements Runnable {
 				if(dataToBeSent[i][j] > max1)
 					max1 = dataToBeSent[i][j];
 				
-				if(ratioState[i][j] > max2)
-					max2 = ratioState[i][j];
+				if(ratioData[i][j] > max2)
+					max2 = ratioData[i][j];
 				
 			}
 			
@@ -1038,35 +1254,12 @@ public class AnalysisManager implements Runnable {
 			
 		}
 		
-		/*
-		
-		for(int i = 0; i < 24*8+7; i++)
-		{
-			
-			System.out.println((newIllScalar[i]));
-			
-			synchronized(this){
-				
-				try{ wait(5000);	} 
-				catch (Exception e) 
-				{ 
-					
-					e.printStackTrace();
-					
-					MainManager.logMessage("#AnalysisManager: System couldn't wait");
-					
-				}
-			}
-		
-		}
-		
-		*/
-		
-		toBeSent.stationsData = transportMove;
+		toBeSent.stationsData = transportData;
 		toBeSent.illData = newIllData;
 		toBeSent.illScalar = newIllScalar;
 		toBeSent.ratioData = newRatioData;
 		toBeSent.ratioScalar = newRatioScalar;		
+		
 		
 	}
 	
@@ -1074,30 +1267,6 @@ public class AnalysisManager implements Runnable {
 	//The runnable.
 	public void run()
 	{
-			
-		/*
-		
-		float[] prevData = new float[5];
-		
-		prevData[0] = prevData[1] = prevData[2] = prevData[3] = prevData[4] = 1;
-		
-		Calendar currentDate = Calendar.getInstance();
-	    currentDate.setTime(new Date());
-	    
-	    prevData = prediction(prevData, currentDate, (byte) 1);
-		
-	    String content = "Prediction gives ";
-	    
-	    for(int i = 0; i < prevData.length; i++)
-	    {
-	    	
-	    	content += prevData[i] + " - ";
-	    	
-	    }
-	    
-	    System.out.println(content);
-		
-		*/
 		
 		init();
 		
@@ -1117,8 +1286,9 @@ public class AnalysisManager implements Runnable {
 					MainManager.logMessage("#AnalysisManager: Prediction ended");
 						
 					MainManager.getAppNetworkManager().updateModel(toBeSent);
-					
+						
 				}
+				
 			} catch (Exception e)
 			{
 						
@@ -1146,7 +1316,6 @@ public class AnalysisManager implements Runnable {
 		}
 		
 		MainManager.logMessage("#AnalysisManager: Shutting down ...");
-		
 		
 	}
 	
@@ -1528,6 +1697,484 @@ public class AnalysisManager implements Runnable {
 		}
 		
 	}
+	
+	
+	//old update function
+	 
+		//If the model is required to generate a new packet for the app, this will run.
+	public void update()
+	{
+		
+		ill = new float[1600];
+		
+		for(int i = 0; i < 1600; i++) { ill[i] = 0;	}
+		
+		float[][] dataToBeSent = new float[24*8+7][1600];
+		
+	    Calendar currentDate = Calendar.getInstance();
+	    currentDate.setTime(new Date());
+		
+		setTweets();
+		addNHS();
+		
+		addTransport(currentDate);
+		
+		dataToBeSent[0] = ill;
+		
+		float[][] ratioState = new float[24*8+7][1600];
+		
+		for(int i = 0; i < 1600; i++)
+		{
+			
+			ratioState[0][i] = (ill[i]/pop[i])*100;
+			
+		}
+		
+		recordData(currentDate);
+		
+		resetPop();
+		
+		float[][] PredictedState = new float[24*8+7][1600];
+		
+		for(int i = 0; i < 24*8 + 7; i++)
+		{
+			
+			for(int j = 0; j < 1600; j++)
+			{
+				
+				PredictedState[i][j] = 0;
+				
+			}
+			
+		}
+		
+		for(int i = 0; i < 1600; i++)
+		{
+			
+			currentDate = Calendar.getInstance();
+		    currentDate.setTime(new Date());
+			
+			float[] predictedData = prediction(getPreviousData(i), currentDate, borough[i]);
+			
+			for(int j = 0; j < 24*4; j++)
+			{
+				
+				PredictedState[j][i] = ill[i]*((7*24*4-j)/7*24*4) + predictedData[0]*((j)/7*24*4);
+				
+			}
+			
+			for(int j = 0; j < 24*2; j++)
+			{
+				
+				PredictedState[24*4 + j][i] = ill[i]*((7*24*2-(24*2 + j))/7*24*2) + predictedData[0]*((24*2 + j)/7*24*2);
+				
+			}
+			
+			for(int j = 0; j < 24; j++)
+			{
+				
+				PredictedState[24*6 + j][i] = ill[i]*((7*24-(24*2 + j))/7*24) + predictedData[0]*((24*2 + j)/7*24);
+				
+			}
+			
+			for(int j = 0; j < 12; j++)
+			{
+				
+				PredictedState[24*7 + j][i] = ill[i]*((7*24-(24*3 + 2*j))/7*24) + predictedData[0]*((24*3 + 2*j)/7*24);
+				
+			}
+			
+			for(int j = 0; j < 6; j++)
+			{
+				
+				PredictedState[24*7 + 12 + j][i] = ill[i]*((7*24-(24*4 + 4*j))/7*24) + predictedData[0]*((24*4 + 4*j)/7*24);
+				
+			}
+			
+			for(int j = 0; j < 4; j++)
+			{
+				
+				PredictedState[24*7 + 18 + j][i] = ill[i]*((7*24-(24*5 + 6*j))/7*24) + predictedData[0]*((24*5 + 6*j)/7*24);
+				
+			}
+			
+			for(int j = 0; j < 2; j++)
+			{
+				
+				PredictedState[24*7 + 22 + j][i] = ill[i]*((7*24-(24*6 + 12*j))/7*24) + predictedData[0]*((24*6 + 12*j)/7*24);
+				
+			}
+			
+			for(int j = 0; j < 7; j++)
+			{
+				
+				PredictedState[24*8 + j][i] = predictedData[0]*((7-j)/7) + predictedData[1]*(j/7);
+				
+			}
+			
+		}
+		
+		currentDate = Calendar.getInstance();
+	    currentDate.setTime(new Date());
+	    short[][] transportMove = new short[24*8+7][269*2];
+	    transportMove[0] = getTransportData(currentDate);
+	    
+		for(int i = 1; i < 8*24 + 7; i++)
+		{
+			
+			if(i < 24*4)
+				currentDate.add(Calendar.MINUTE, 15);
+			else if (i < 24*6)
+				currentDate.add(Calendar.MINUTE, 30);
+			else if (i < 24*7)
+				currentDate.add(Calendar.HOUR, 1);
+			else if (i < 24*7 + 12)
+				currentDate.add(Calendar.HOUR, 2);
+			else if (i < 27*7 + 18)
+				currentDate.add(Calendar.HOUR, 4);
+			else if (i < 27*7 + 22)
+				currentDate.add(Calendar.HOUR, 6);
+			else if (i < 24*8)
+				currentDate.add(Calendar.HOUR, 12);
+			else
+				currentDate.add(Calendar.DAY_OF_YEAR, 1);
+			
+			ill = PredictedState[i];
+			addTransport(currentDate);
+			dataToBeSent[i] = ill;
+			
+			for(int j = 0; j < 1600; j++)
+			{
+				
+				ratioState[i][j] = (ill[j]/pop[j])*100;
+				
+			}
+			
+			resetPop();
+			transportMove[i] = getTransportData(currentDate);
+			
+		}
+		
+		float[] newIllScalar = new float[24*8+7];
+		byte[][] newIllData = new byte[24*8+7][1600];
+		float[] newRatioScalar = new float[24*8+7];
+		byte[][] newRatioData = new byte[24*8+7][1600];
+		
+		for(int i = 0; i < 24*8 + 7; i++)
+		{
+			
+			float max1 = 0;
+			float max2 = 0;
+			
+			for(int j = 0; j < 1600; j++)
+			{
+				
+				if(dataToBeSent[i][j] > max1)
+					max1 = dataToBeSent[i][j];
+				
+				if(ratioState[i][j] > max2)
+					max2 = ratioState[i][j];
+				
+			}
+			
+			newIllScalar[i] = max1;
+			newRatioScalar[i] = max2;
+			
+			for(int j = 0; j < 1600; j++)
+			{
+				
+				if(max1 == 0)
+					newIllData[i][j] = -128;
+				else
+					newIllData[i][j] = (byte) ((dataToBeSent[i][j]*255/max1) - 128);
+				
+				if(max2 == 0)
+					newRatioData[i][j] = -128;
+				else
+					newRatioData[i][j] = (byte) ((dataToBeSent[i][j]*255/max2) - 128);
+				
+			}	
+			
+		}
+		
+		for(int i = 0; i < 24*8+7; i++)
+		{
+			
+			System.out.println((newIllScalar[i]));
+			
+			synchronized(this){
+				
+				try{ wait(5000);	} 
+				catch (Exception e) 
+				{ 
+					
+					e.printStackTrace();
+					
+					MainManager.logMessage("#AnalysisManager: System couldn't wait");
+					
+				}
+			}
+		
+		}
+		
+		toBeSent.stationsData = transportMove;
+		toBeSent.illData = newIllData;
+		toBeSent.illScalar = newIllScalar;
+		toBeSent.ratioData = newRatioData;
+		toBeSent.ratioScalar = newRatioScalar;		
+		
+	}
+	
+	//Function is called to add the travel data to the model.
+	public void addTransport(Calendar date)
+	{
+		int Day = date.get(Calendar.DAY_OF_WEEK);
+		int MinRep = (int)(date.get(Calendar.MINUTE)/15);
+		int HourRep = date.get(Calendar.HOUR_OF_DAY) - 2;
+		float average = getAverageIll();
+		
+		if(((Day == 0) && (HourRep >= 0)) || ((Day == 1) && (HourRep < 0)))
+		{
+			
+			MainManager.getDataManager().loadStationTravel(DataManager.EXIT, DataManager.SUN);
+			
+			for (int i = 0; i < 269; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				
+				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
+				{
+				
+					for(int j = 0; j < 4*((HourRep+24)%24) + MinRep; j++)
+					{
+						
+						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+						
+					}
+					
+				}
+				
+			}
+			
+			MainManager.getDataManager().loadStationTravel(DataManager.ENTER, DataManager.SUN);
+			
+			for (int i = 0; i < 269; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				
+				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
+				{
+				
+					for(int j = 0; j < 4*((HourRep+24)%24) + MinRep; j++)
+					{
+						
+						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+						
+					}
+					
+				}
+				
+			}
+			
+		}else if(((Day == 7) && (HourRep >= 0)) || ((Day == 0) && (HourRep < 0)))
+		{
+			
+			MainManager.getDataManager().loadStationTravel(DataManager.EXIT, DataManager.SAT);
+			
+			for (int i = 0; i < 269; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				
+				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
+				{
+				
+					for(int j = 0; j < 4*((HourRep+24)%24) + MinRep; j++)
+					{
+						
+						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+						
+					}
+					
+				}
+				
+			}
+			
+			MainManager.getDataManager().loadStationTravel(DataManager.ENTER, DataManager.SAT);
+			
+			for (int i = 0; i < 269; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				
+				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
+				{
+				
+					for(int j = 0; j < 4*((HourRep+24)%24) + MinRep; j++)
+					{
+						
+						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+						
+					}
+					
+				}
+				
+			}
+			
+		} else
+		{
+			
+			MainManager.getDataManager().loadStationTravel(DataManager.EXIT, DataManager.WEEK);
+			
+			for (int i = 0; i < 269; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				
+				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
+				{
+				
+					for(int j = 0; j < 4*((HourRep+24)%24) + MinRep; j++)
+					{
+						
+						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+						
+					}
+				
+				}
+					
+			}
+			
+			MainManager.getDataManager().loadStationTravel(DataManager.ENTER, DataManager.WEEK);
+			
+			for (int i = 0; i < 269; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				
+				if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
+				{
+				
+					for(int j = 0; j < 4*((HourRep+24)%24) + MinRep; j++)
+					{
+						
+						movePeople(currentStation.coordinates[0], currentStation.coordinates[1], currentStation.people[j], average);
+						
+					}
+					
+				}
+				
+			}
+			
+		}
+		
+	}
+
+	
+	//Function is called to get the information about the stations that will be sent over the network.
+	public short[] getTransportData(Calendar date)
+	{
+		
+		short[] currentTransport = new short[538];
+		
+		int Day = date.get(Calendar.DAY_OF_WEEK);
+		int MinRep = (int)(date.get(Calendar.MINUTE)/15);
+		int HourRep = date.get(Calendar.HOUR) - 2;
+		
+		if(((Day == 0) && (HourRep >= 0)) || ((Day == 1) && (HourRep < 0)))
+		{
+			
+			MainManager.getDataManager().loadStationTravel(DataManager.EXIT, DataManager.SUN);
+			
+			for (int i = 0; i < 269; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				if ((currentStation != null) && (currentStation.people != null) && (currentStation.people.length > (24*4 - 1)))
+					currentTransport[i*2+1] = (short) currentStation.people[4*((HourRep+24)%24) + MinRep];
+				else
+					currentTransport[i*2+1] = 0;
+				
+			}
+			
+			MainManager.getDataManager().loadStationTravel(DataManager.ENTER, DataManager.SUN);
+			
+			for (int i = 0; i < 269; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				if ((currentStation != null) && (currentStation.people != null) && (currentStation.people.length > (24*4 - 1)))
+					currentTransport[i*2] = (short) currentStation.people[4*((HourRep+24)%24) + MinRep];
+					currentTransport[i*2] = 0;
+				
+			}
+			
+		}else if(((Day == 7) && (HourRep >= 0)) || ((Day == 0) && (HourRep < 0)))
+		{
+			
+			MainManager.getDataManager().loadStationTravel(DataManager.EXIT, DataManager.SAT);
+			
+			for (int i = 0; i < 269; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				if ((currentStation != null) && (currentStation.people != null) && (currentStation.people.length > (24*4 - 1)))
+					currentTransport[i*2+1] = (short) currentStation.people[4*((HourRep+24)%24) + MinRep];
+				else
+					currentTransport[i*2+1] = 0;
+				
+			}
+			
+			MainManager.getDataManager().loadStationTravel(DataManager.ENTER, DataManager.SAT);
+			
+			for (int i = 0; i < 269; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				if ((currentStation != null) && (currentStation.people != null) && (currentStation.people.length > (24*4 - 1)))
+					currentTransport[i*2] = (short) currentStation.people[4*((HourRep+24)%24) + MinRep];
+				else
+					currentTransport[i*2] = 0;
+				
+			}
+			
+		} else
+		{
+			
+			MainManager.getDataManager().loadStationTravel(DataManager.EXIT, DataManager.WEEK);
+			
+			for (int i = 0; i < 269; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				if ((currentStation != null) && (currentStation.people != null) && (currentStation.people.length > (24*4 - 1)))
+					currentTransport[i*2+1] = (short) currentStation.people[4*((HourRep + 24)%24) + MinRep];
+				else
+					currentTransport[i*2+1] = 0;
+				
+			}
+			
+			MainManager.getDataManager().loadStationTravel(DataManager.ENTER, DataManager.WEEK);
+			
+			for (int i = 0; i < 269; i++) 
+			{
+				
+				StationInfo currentStation = MainManager.getDataManager().getNextStation();
+				if ((currentStation != null) && (currentStation.people != null) && (currentStation.people.length > (24*4 - 1)))
+					currentTransport[i*2] = (short) currentStation.people[4*((HourRep+24)%24) + MinRep];
+				else
+					currentTransport[i*2] = 0;
+				
+			}
+			
+		}
+		
+		return currentTransport;
+		
+	}
+	
 	
 	 */
 	
