@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -192,8 +191,8 @@ public class DataManager
 	{
 		currentStations.clear();
 		MainManager.logMessage("#DataManager: Current working directory " + System.getProperty("user.dir"));
-		String path = System.getProperty("user.dir") + "res/TravelManager/CSVTravelData/" + direction + time + ".xls.csv";
-		path = path.replaceAll("/", System.getProperty("path.seperator"));
+		String path = "\".\"/res/TravelManager/CSVTravelData/" + direction + time + ".xls.csv";
+		//path = path.replaceAll("/", System.getProperty("path.seperator"));
 		File csv = new File(path);
 		//MainManager.logMessage("#DataManager: " + csv.getAbsolutePath());
 		BufferedReader reader = null;
