@@ -21,8 +21,8 @@ import org.w3c.dom.NodeList;
 public class DataManager
 {
 	//To be used with loadStationTravel to specify the info desired
-	public static final String ENTER = "EN11";
-	public static final String EXIT = "EX11";
+	public static final String ENTER = "En11";
+	public static final String EXIT = "Ex11";
 	public static final String WEEK = "Week";
 	public static final String SAT = "sat";
 	public static final String SUN = "sun";
@@ -191,7 +191,7 @@ public class DataManager
 	{
 		currentStations.clear();
 		MainManager.logMessage("#DataManager: Current working directory " + System.getProperty("user.dir"));
-		String path = "./res/travelmanager/csvtraveldata/" + direction + time + ".xls.csv";
+		String path = "./res/TravelManager/CSVTravelData/" + direction + time + ".xls.csv";
 		//path = path.replaceAll("/", System.getProperty("path.seperator"));
 		File csv = new File(path);
 		//MainManager.logMessage("#DataManager: " + csv.getAbsolutePath());
