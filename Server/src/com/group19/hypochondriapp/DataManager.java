@@ -191,7 +191,7 @@ public class DataManager
 	{
 		currentStations.clear();
 		MainManager.logMessage("#DataManager: Current working directory " + System.getProperty("user.dir"));
-		String path = "\".\"/res/TravelManager/CSVTravelData/" + direction + time + ".xls.csv";
+		String path = "./res/travelmanager/csvtraveldata/" + direction + time + ".xls.csv";
 		//path = path.replaceAll("/", System.getProperty("path.seperator"));
 		File csv = new File(path);
 		//MainManager.logMessage("#DataManager: " + csv.getAbsolutePath());
