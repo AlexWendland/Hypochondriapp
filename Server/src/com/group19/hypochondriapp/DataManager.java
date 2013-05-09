@@ -308,17 +308,19 @@ public class DataManager
 				}
 			}
 			
-			if(date.get(Calendar.MONTH) == Calendar.JANUARY)
+			if(returnVal == -1)
 			{
-				date.set(Calendar.YEAR, date.get(Calendar.YEAR) - 1);
-				returnVal = getGoogleInsights(date);
+				if(date.get(Calendar.MONTH) == Calendar.JANUARY)
+				{
+					date.set(Calendar.YEAR, date.get(Calendar.YEAR) - 1);
+					returnVal = getGoogleInsights(date);
+				}
+				else if(date.get(Calendar.MONTH) == Calendar.DECEMBER)
+				{
+					date.set(Calendar.YEAR, date.get(Calendar.YEAR) + 1);
+					returnVal = getGoogleInsights(date);
+				}
 			}
-			else if(date.get(Calendar.MONTH) == Calendar.DECEMBER)
-			{
-				date.set(Calendar.YEAR, date.get(Calendar.YEAR) + 1);
-				returnVal = getGoogleInsights(date);
-			}
-			
 		}
 		catch(IOException e)
 		{

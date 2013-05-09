@@ -110,6 +110,10 @@ public class TwitterManager implements Runnable
 		query.setCount(100);
 		query.setQuery("\"feel sick\" OR \"feeling sick\" OR \"sneezing\" OR \"gotten sick\" OR \"flu\" OR \"influenza\" OR \"bedridden\" OR \"cough\"");
 		
+		MainManager.logMessage("#TwitterManager: Updating tweets...");
+		
+		int tweetCount = 0;
+		
 		while(!finished)
 		{
 		
@@ -126,6 +130,7 @@ public class TwitterManager implements Runnable
 		
 		
 			List<Status> resultList = result.getTweets();
+			tweetCount += resultList.size();
 		
 			if(resultList.isEmpty()) MainManager.logMessage("#TwitterManager: No tweets received on update");
 		
@@ -159,6 +164,8 @@ public class TwitterManager implements Runnable
 		}
 		
 		twitter.shutdown();
+		
+		MainManager.logMessage("#TwitterManager: Recieved " + tweetCount + " tweets");
 		
 		updated = true;
 	}

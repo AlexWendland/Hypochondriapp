@@ -14,7 +14,8 @@ public class AppNetworkManager implements Runnable
 	ServerSocket socket;
 	
 	AppDataPacket currentDataModel = null;
-											
+	
+	private volatile int connectionCount = 0;								
 	
 	public AppNetworkManager()
 	{
@@ -64,6 +65,7 @@ public class AppNetworkManager implements Runnable
 		}
 		catch(Exception e){}
 		
+		MainManager.logMessage("#AppNetworkManager: Serviced " + connectionCount + " information requests.");
 		MainManager.logMessage("#AppNetworkManager: Shutting down ...");
 		
 	}
@@ -117,6 +119,7 @@ public class AppNetworkManager implements Runnable
 					toApp.writeObject(currentDataModel);
 					toApp.flush();
 					MainManager.logMessage("#AppNetworkManager: App request serviced");
+					connectionCount++;
 				}
 				catch(IOException e)
 				{
