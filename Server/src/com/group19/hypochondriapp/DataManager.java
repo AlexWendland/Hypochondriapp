@@ -275,8 +275,8 @@ public class DataManager
 		}
 		catch(FileNotFoundException e)
 		{
-			MainManager.logMessage("#DataManager: Google Insights does not exist for that year, try updating GoogleManager");
-			e.printStackTrace();
+			//MainManager.logMessage("#DataManager: Google Insights does not exist for that year, try updating GoogleManager");
+			//e.printStackTrace();
 			return -1;
 		}
 		

@@ -8,7 +8,7 @@ public class AppDataPacket implements Serializable
 	
 	public byte[][] illData = new byte[24*8+7][1600];
 	public float[] illScalar = new float[24*8+7];
-	public short[][] stationsData = new short[24*8+7][269*2];
+	public int[][] stationsData = new int[269*2][24*8+7];
 	public byte[][] ratioData = new byte[24*8+7][1600];
 	public float[] ratioScalar = new float[24*8+7];
 	
