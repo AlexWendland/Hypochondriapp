@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -386,8 +387,11 @@ public class AnalysisManager implements Runnable {
 	public static float[] prediction(float[] previousAverage, Calendar currentDate, byte borough)
 	{
 		
+		int count = 0;
+		
 		float currentMinError = 999999999;
 		float[] currentEstimate = new float[2];
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 		
 		currentEstimate[1] = currentEstimate[0] = 0;
 		
@@ -395,6 +399,8 @@ public class AnalysisManager implements Runnable {
 		
 		while ((MainManager.getDataManager().getGoogleInsights(currentDate) != -1))
 		{
+			
+			System.out.println(format.format(currentDate.getTime()));
 			
 			currentDate.add(Calendar.WEEK_OF_YEAR, 5);
 			
@@ -1286,9 +1292,9 @@ public class AnalysisManager implements Runnable {
 					MainManager.logMessage("#AnalysisManager: Prediction ended");
 						
 					MainManager.getAppNetworkManager().updateModel(toBeSent);
-						
+					
 				}
-				
+					
 			} catch (Exception e)
 			{
 						
@@ -1304,7 +1310,6 @@ public class AnalysisManager implements Runnable {
 					{ 
 						
 						//wait(MainManager.UPDATE_TIME);
-						
 						wait(1000);
 						
 					}
