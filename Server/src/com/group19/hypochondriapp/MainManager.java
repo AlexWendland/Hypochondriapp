@@ -99,6 +99,7 @@ public class MainManager
 		init();
 		
 		logMessage("#MainManager: Server initialised, ready to accept commands");
+		logMessage("#MainManager: Current working directory is " + System.getProperty("user.dir"));
 	
 		String command = new String();
 		

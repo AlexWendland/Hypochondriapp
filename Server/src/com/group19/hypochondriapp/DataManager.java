@@ -190,8 +190,10 @@ public class DataManager
 	public void loadStationTravel(String direction, String time)
 	{
 		currentStations.clear();
+		MainManager.logMessage("#DataManager: Current working directory " + System.getProperty("user.dir"));
 		String s = System.getProperty("path.separator");
 		File csv = new File("." + s + "res" + s + "TravelManager" + s + "CSVTravelData" + s + direction + time + ".xls.csv");
+		MainManager.logMessage("#DataManager: " + csv.getAbsolutePath());
 		BufferedReader reader = null;
 		
 		try
