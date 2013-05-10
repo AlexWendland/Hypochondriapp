@@ -26,7 +26,7 @@ public class AnalysisManager implements Runnable {
 	
 	//Files used and constants.
 	File dataStore = new File("./res/AnalysisManager/DataStore.txt");
-	public static final short TWITSCALAR = 100;
+	public static final short TWITSCALAR = 120;
 	public static final byte TWITTER_CELLS = 100;  
 	public static final byte DAY_OF_UPDATE = 0;
 	public static final short CELL_EFFECT = 1000;
@@ -383,43 +383,60 @@ public class AnalysisManager implements Runnable {
 	}
 
 	
-	//Function is a called to provide a predicted future for a certain cell.
-	public static float[] prediction(float[] previousAverage, Calendar currentDate, byte borough)
+	
+	//Returns the usefull google insight data.
+	public byte[] getGoogleInsight()
 	{
 		
-		int count = 0;
+	    Calendar currentDate = Calendar.getInstance();
+	    currentDate.setTime(new Date());
+	    
+	    currentDate.add(Calendar.WEEK_OF_YEAR, -2);
+	    
+	    ArrayList<Byte> data = new ArrayList<Byte>();
+	    byte temp = 0;
+	    
+		while (((temp = MainManager.getDataManager().getGoogleInsights(currentDate)) != -1))
+		{
+			
+			data.add(temp);
+			currentDate.add(Calendar.WEEK_OF_YEAR, -1);
+			
+		}
+		
+		byte[] returnData = new byte[data.size()];
+		
+		for(int i = 0; i < data.size(); i++)
+			returnData[i] = data.get(i);
+		
+		return returnData;
+		
+	}
+	
+	//Function is a called to provide a predicted future for a certain cell.
+	public static float[] prediction(float[] previousAverage, byte[] insightData, byte borough)
+	{
 		
 		float currentMinError = 999999999;
 		float[] currentEstimate = new float[2];
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 		
 		currentEstimate[1] = currentEstimate[0] = 0;
 		
-		currentDate.add(Calendar.WEEK_OF_YEAR, -8);
-		
-		while ((MainManager.getDataManager().getGoogleInsights(currentDate) != -1))
+		for(int i = 0; i < insightData.length - 7; i++)
 		{
-			
-			System.out.println(format.format(currentDate.getTime()));
-			
-			currentDate.add(Calendar.WEEK_OF_YEAR, 5);
 			
 			float error = 0;
 			
-			float scalar = previousAverage[0]/MainManager.getDataManager().getGoogleInsights(currentDate);
+			float scalar = previousAverage[0]/insightData[2 + i];
 				
 			if (scalar <= 0) 	continue;
-				
 				
 			for(int j = 0; j < 4; j++)
 			{
 					
-				currentDate.add(Calendar.WEEK_OF_YEAR, -1);
-				error += Math.pow((previousAverage[j+1] - MainManager.getDataManager().getGoogleInsights(currentDate)*scalar),2);
+				error += Math.pow((previousAverage[j+1] - insightData[3+i+j]*scalar),2);
 					
 			}
-				
-			currentDate.add(Calendar.WEEK_OF_YEAR, 4);
 				
 			error = (float) Math.pow(error, 0.5);
 				
@@ -427,15 +444,10 @@ public class AnalysisManager implements Runnable {
 			{
 					
 				currentMinError = error;
-				currentDate.add(Calendar.WEEK_OF_YEAR, 1);
-				currentEstimate[0] = MainManager.getDataManager().getGoogleInsights(currentDate)*scalar;
-				currentDate.add(Calendar.WEEK_OF_YEAR, 1);
-				currentEstimate[1] = MainManager.getDataManager().getGoogleInsights(currentDate)*scalar;
-				currentDate.add(Calendar.WEEK_OF_YEAR, -2);
+				currentEstimate[0] = insightData[1+i]*scalar;
+				currentEstimate[1] = insightData[i]*scalar;
 					
 			}
-			
-			currentDate.add(Calendar.WEEK_OF_YEAR, -6);
 			
 		}
 			
@@ -933,10 +945,12 @@ public class AnalysisManager implements Runnable {
 		
 		float[][] change = new float[2][1600];
 		
+		byte[] insightData = getGoogleInsight();
+		
 		for(int i = 0; i < 1600; i++)
 		{
 			
-			float[] predictedData = prediction(getPreviousData(i), currentDate, borough[i]);
+			float[] predictedData = prediction(getPreviousData(i), insightData, borough[i]);
 			
 			currentDate = Calendar.getInstance();
 		    currentDate.setTime(new Date());

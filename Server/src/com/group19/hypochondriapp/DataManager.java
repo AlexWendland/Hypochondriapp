@@ -263,63 +263,73 @@ public class DataManager
 	//Gets the insight for the given day
 	//Probably contains a bug where record will not be found as 01-01-2011 is in flu2010.csv
 	//Returns -1 if nothing found in file
-	public byte getGoogleInsights(Calendar newDate)
+	public byte getGoogleInsights(Calendar date)
 	{
-		Calendar date = newDate;
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 		Byte returnVal = -1;
 		String dir = new String("./res/GoogleManager/flu" + date.get(Calendar.YEAR) + ".csv");
 		File csv = new File(dir);
-		BufferedReader reader = null;
 		
+		returnVal = getInsightsFromFile(date, csv);
+		
+		if(returnVal == -1)
+		{
+			if(date.get(Calendar.MONTH) == Calendar.JANUARY)
+			{
+				int year = date.get(Calendar.YEAR) - 1;
+				dir = new String("./res/GoogleManager/flu" + year + ".csv");
+				returnVal = getInsightsFromFile(date, new File(dir));
+			}
+			else if(date.get(Calendar.MONTH) == Calendar.DECEMBER)
+			{
+				int year = date.get(Calendar.YEAR) + 1;
+				dir = new String("./res/GoogleManager/flu" + year + ".csv");
+				returnVal = getInsightsFromFile(date, new File(dir));
+			}
+		}
+		
+		return returnVal;
+	}
+	
+	private byte getInsightsFromFile(Calendar date, File csv)
+	{
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+		Byte returnVal = -1;
+		BufferedReader reader = null;
+
 		try
 		{
 			reader = new BufferedReader(new FileReader(csv));
 		}
 		catch(FileNotFoundException e)
 		{
-			MainManager.logMessage("#DataManager: Google Insights does not exist for that year(" + format.format(date.getTime()) + "), try updating GoogleManager");
+			MainManager.logMessage("#DataManager: Google Insights does not exist for that year, try updating GoogleManager");
 			return -1;
 		}
-		
+
 		String record = new String();
-		
+
 		try
 		{
 			while(record != null)
 			{
 				record = reader.readLine();
-				
+
 				if(record == null) continue;
 				if(record.length() == 0) continue;
-				
+
 				if(Character.isDigit(record.charAt(0)))
 				{
 					String[] pair = record.split(",");
 					String[] dates = pair[0].split(" - ");
-					
+
 					long earlyDate = format.parse(dates[0]).getTime();
 					long laterDate = format.parse(dates[1]).getTime();
-					
+
 					if(date.getTimeInMillis() <= laterDate && date.getTimeInMillis() >= earlyDate)
 					{
 						returnVal = Byte.parseByte(pair[1]);
 						break;
 					}
-				}
-			}
-			
-			if(returnVal == -1)
-			{
-				if(date.get(Calendar.MONTH) == Calendar.JANUARY)
-				{
-					date.set(Calendar.YEAR, date.get(Calendar.YEAR) - 1);
-					returnVal = getGoogleInsights(date);
-				}
-				else if(date.get(Calendar.MONTH) == Calendar.DECEMBER)
-				{
-					date.set(Calendar.YEAR, date.get(Calendar.YEAR) + 1);
-					returnVal = getGoogleInsights(date);
 				}
 			}
 		}
@@ -343,7 +353,7 @@ public class DataManager
 			}
 			catch(Exception e){}
 		}
-		
+
 		return returnVal;
 	}
 	
