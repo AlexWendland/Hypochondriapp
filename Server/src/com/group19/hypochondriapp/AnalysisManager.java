@@ -30,7 +30,7 @@ public class AnalysisManager implements Runnable {
 	public static final byte DAY_OF_UPDATE = 0;
 	public static final short CELL_EFFECT = 1000;
 	public static final short SMOOTHING_SCALAR_1 = 1000;
-	public static final short SMOOTHING_SCALAR_2 = 3;
+	public static final short SMOOTHING_SCALAR_2 = 20;
 	
 	//Initiation of the model.
 	public void init() 
