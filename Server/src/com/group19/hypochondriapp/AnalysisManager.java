@@ -5,7 +5,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -30,6 +29,8 @@ public class AnalysisManager implements Runnable {
 	public static final byte TWITTER_CELLS = 100;  
 	public static final byte DAY_OF_UPDATE = 0;
 	public static final short CELL_EFFECT = 1000;
+	public static final short SMOOTHING_SCALAR_1 = 1000;
+	public static final short SMOOTHING_SCALAR_2 = 3;
 	
 	//Initiation of the model.
 	public void init() 
@@ -73,21 +74,72 @@ public class AnalysisManager implements Runnable {
 		
 		short[] returnedCells = new short[8];
 		
-		double y = ((int)(num/40))*0.01 + 51.3 + 0.005;
-		double x = (num%40)*0.02 - 0.5 + 0.01;		
+		if(num > -1 && num < 1600)
+		{
+		
+			double y = ((int)(num/40))*0.01 + 51.3 + 0.005;
+			double x = (num%40)*0.02 - 0.5 + 0.01;		
+				
+			returnedCells[0] = (short) cordConv((float) (y - 0.01), (float) (x + 0.02));
+			returnedCells[1] = (short) cordConv((float) (y), (float) (x + 0.02));
+			returnedCells[2] = (short) cordConv((float) (y + 0.01), (float) (x + 0.02));
+			returnedCells[3] = (short) cordConv((float) (y - 0.01), (float) (x));
+			returnedCells[4] = (short) cordConv((float) (y + 0.01), (float) (x));
+			returnedCells[5] = (short) cordConv((float) (y - 0.01), (float) (x - 0.02));
+			returnedCells[6] = (short) cordConv((float) (y), (float) (x - 0.02));
+			returnedCells[7] = (short) cordConv((float) (y + 0.01), (float) (x - 0.02));
+		} else
+		{
 			
-		returnedCells[0] = (short) cordConv((float) (y - 0.01), (float) (x + 0.02));
-		returnedCells[1] = (short) cordConv((float) (y), (float) (x + 0.02));
-		returnedCells[2] = (short) cordConv((float) (y + 0.01), (float) (x + 0.02));
-		returnedCells[3] = (short) cordConv((float) (y - 0.01), (float) (x));
-		returnedCells[4] = (short) cordConv((float) (y + 0.01), (float) (x));
-		returnedCells[5] = (short) cordConv((float) (y - 0.01), (float) (x - 0.02));
-		returnedCells[6] = (short) cordConv((float) (y), (float) (x - 0.02));
-		returnedCells[7] = (short) cordConv((float) (y + 0.01), (float) (x - 0.02));
+			for(int i = 0; i < 8; i++)
+			{
+				
+				returnedCells[i] = -1;
+				
+			}
+			
+		}
 		
 		return returnedCells;
 		
 	}
+	
+	
+	//Smooths data4
+	public float[] smoothData(float[] input)
+	{
+		
+		float[] returnData = new float[input.length];
+		
+		for(int i = 0; i < input.length; i++)
+		{
+			
+			short[] aroundCells = getAroundCells(i);
+			int count = 0;
+			returnData[i] = (float) Math.pow(input[i]*SMOOTHING_SCALAR_1, 2);
+			
+			for(int j = 0; j < aroundCells.length; j++)
+			{
+				
+				if(aroundCells[j] != -1)
+				{
+					
+					count++;
+					returnData[i] += (float) Math.pow(input[aroundCells[j]]*SMOOTHING_SCALAR_2, 2);
+					
+				}
+				
+			}
+			
+			float divisableScalar = (float) (Math.pow(SMOOTHING_SCALAR_1, 2) + count*Math.pow(SMOOTHING_SCALAR_2, 2));
+			returnData[i] = (float) ((float) Math.pow(returnData[i], 0.5)/Math.pow(divisableScalar, 0.5));
+			
+		}
+		
+		return returnData;
+		
+	}
+	
 	
 	//Resets the model to the old pop.
 	public void resetPop()	
@@ -383,7 +435,6 @@ public class AnalysisManager implements Runnable {
 	}
 
 	
-	
 	//Returns the usefull google insight data.
 	public byte[] getGoogleInsight()
 	{
@@ -412,6 +463,7 @@ public class AnalysisManager implements Runnable {
 		return returnData;
 		
 	}
+	
 	
 	//Function is a called to provide a predicted future for a certain cell.
 	public static float[] prediction(float[] previousAverage, byte[] insightData, byte borough)
@@ -558,12 +610,11 @@ public class AnalysisManager implements Runnable {
 	
 	
 	//Function is called to read the store for the previous infomation about that cell.
-	public float[] getPreviousData(int cell)
+	public float[][] getPreviousData()
 	{
 		
-		float[] pastData = new float[5];
-		
-		pastData[0] = pastData[1] =  pastData[2] = pastData[3] = pastData[4] = 0;
+		float[][] pastData = new float[1600][5];
+		String[] scannedInData = new String[5];
 		
 		try 
 		{
@@ -574,16 +625,8 @@ public class AnalysisManager implements Runnable {
 			
 			if ((Temp1 != null) && (Temp1.length() != 0))
 			{
-				String[] Temp2 = Temp1.split(" - ");
-				int length = Temp2.length;
-				for(int i = 0; i < Math.min(5, length - 1); i++)
-				{
-					String[] Temp3 = Temp2[length - (2+i)].split(" ");
-					
-					if(Temp3.length > 1599)
-						pastData[i] = Float.valueOf(Temp3[cell]);
-
-				}
+				
+				scannedInData = Temp1.split(" - ");
 				
 			}
 			
@@ -593,6 +636,36 @@ public class AnalysisManager implements Runnable {
 			
 			MainManager.logMessage("#AnalysisManager: Could not read ./res/AnalysisManager/DataStore.txt, recommend shut down.");
 		
+		}
+		
+		for(int cell = 0; cell < 1600; cell++)
+		{
+		
+			pastData[cell][0] = pastData[cell][1] =  pastData[cell][2] = pastData[cell][3] = pastData[cell][4] = 0;
+			
+			try 
+			{
+	
+				int length = scannedInData.length;
+				for(int i = 0; i < Math.min(5, length - 1); i++)
+				{
+					String[] Temp3 = scannedInData[length - (2+i)].split(" ");
+					
+					if(Temp3.length > 1599)
+						pastData[cell][i] = Float.valueOf(Temp3[cell]);
+					else
+						pastData[cell][i] = 0;
+	
+				}
+				
+			} 
+			catch (Exception e) 
+			{
+				
+				MainManager.logMessage("#AnalysisManager: Could not read ./res/AnalysisManager/DataStore.txt, recommend shut down.");
+			
+			}
+			
 		}
 		
 		return pastData;
@@ -946,11 +1019,12 @@ public class AnalysisManager implements Runnable {
 		float[][] change = new float[2][1600];
 		
 		byte[] insightData = getGoogleInsight();
+		float[][] previousData = getPreviousData();
 		
 		for(int i = 0; i < 1600; i++)
 		{
 			
-			float[] predictedData = prediction(getPreviousData(i), insightData, borough[i]);
+			float[] predictedData = prediction(previousData[i], insightData, borough[i]);
 			
 			currentDate = Calendar.getInstance();
 		    currentDate.setTime(new Date());
@@ -1239,6 +1313,8 @@ public class AnalysisManager implements Runnable {
 		
 		for(int i = 0; i < 24*8 + 7; i++)
 		{
+			
+			dataToBeSent[i] = smoothData(dataToBeSent[i]);
 			
 			float max1 = 0;
 			float max2 = 0;
