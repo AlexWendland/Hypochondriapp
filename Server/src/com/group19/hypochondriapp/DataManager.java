@@ -34,6 +34,7 @@ public class DataManager
 	File boroughDensities = new File("./res/DataManager/BoroughDensities.txt");
 	File boroughPlaces = new File("./res/DataManager/BoroughPlace.txt");
 	File fakeNHS = new File("./res/DataManager/FakeNHS.txt");
+	File fluRates = new File("./res/DataManager/flurates.csv");
 
 	
 	public DataManager() 
@@ -176,6 +177,64 @@ public class DataManager
 		
 		return NHS;
 		
+	}
+	
+	//Gets the sample flu rates found on data.london.gov
+	public float[] getFluRates(String place)
+	{
+		BufferedReader reader = null;
+		
+		try
+		{
+			reader = new BufferedReader(new FileReader(fluRates));
+		}
+		catch(FileNotFoundException e)
+		{
+			MainManager.logMessage("#DataManager: Could not find file \"" + fluRates.getAbsolutePath() + "\"");
+			e.printStackTrace();
+			return null;
+		}
+		
+		String record = new String();
+		float[] values = null;
+		
+		try
+		{
+			while(record != null)
+			{
+				record = reader.readLine();
+				String[] attribs = record.split(",");
+				if(!attribs[1].contains(place)) continue;
+				
+				values = new float[attribs.length - 2];
+				
+				for(int i = 2; i < attribs.length; i++)
+				{
+					try
+					{
+						values[i-2] = Float.parseFloat(attribs[i]);
+					}
+					catch(NumberFormatException e)
+					{
+						values[i-2] = -1;
+					}
+				}
+				break;
+			}
+		}
+		catch(IOException e)
+		{
+			MainManager.logMessage("#DataManager: Could not read \"" + fluRates.getAbsolutePath() + "\", encountered IOException");
+			e.printStackTrace();
+		}
+		
+		try
+		{
+			reader.close();
+		}
+		catch(Exception e){}
+		
+		return values;
 	}
 
 	
