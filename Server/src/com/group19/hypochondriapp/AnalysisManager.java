@@ -25,12 +25,12 @@ public class AnalysisManager implements Runnable {
 	
 	//Files used and constants.
 	File dataStore = new File("./res/AnalysisManager/DataStore.txt");
-	public static final short TWITSCALAR = 120;
+	public static final short TWITSCALAR = 150;
 	public static final byte TWITTER_CELLS = 100;  
 	public static final byte DAY_OF_UPDATE = 0;
 	public static final short CELL_EFFECT = 1000;
 	public static final short SMOOTHING_SCALAR_1 = 1000;
-	public static final short SMOOTHING_SCALAR_2 = 20;
+	public static final short SMOOTHING_SCALAR_2 = 100;
 	
 	//Initiation of the model.
 	public void init() 
