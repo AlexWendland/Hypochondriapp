@@ -128,10 +128,10 @@ public class AnalysisManager implements Runnable {
 				{
 					
 					if(input[aroundCells[j]] > max)
-						input[aroundCells[j]] = max;
+						max = input[aroundCells[j]];
 					
 					if(input[aroundCells[j]] < min)
-						input[aroundCells[j]] = min;
+						min = input[aroundCells[j]];
 					
 					count++;
 					returnData[i] += (float) Math.pow(input[aroundCells[j]], 2)*SMOOTHING_SCALAR_2;
