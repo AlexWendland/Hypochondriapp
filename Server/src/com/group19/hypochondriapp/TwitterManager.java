@@ -153,6 +153,11 @@ public class TwitterManager implements Runnable
 				location = resultList.get(i).getUser().getLocation();
 				location = location.toUpperCase();
 				if(!location.contains("LONDON")) continue;
+				else if(resultList.get(i).getGeoLocation() != null)
+				{
+					String coords = new String(resultList.get(i).getGeoLocation().getLatitude() + "," + resultList.get(i).getGeoLocation().getLongitude());
+					locations.add(coords);
+				}
 				else locations.add(location);
 				
 				if(resultList.get(i).getGeoLocation() != null) geoCount++;
@@ -169,8 +174,8 @@ public class TwitterManager implements Runnable
 		twitter.shutdown();
 		
 		MainManager.logMessage("#TwitterManager: Recieved " + tweetCount + " tweets");
-		MainManager.logMessage("#TwitterManager: Used " + locations.size() + "tweets");
-		MainManager.logMessage("#TwitterManager: " + geoCount + " geolocations were ignored.");
+		MainManager.logMessage("#TwitterManager: Used " + locations.size() + " tweets");
+		MainManager.logMessage("#TwitterManager: " + geoCount + " exact geolocations were used.");
 		
 		updated = true;
 	}
