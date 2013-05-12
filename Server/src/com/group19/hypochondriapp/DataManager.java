@@ -203,7 +203,9 @@ public class DataManager
 			while(record != null)
 			{
 				record = reader.readLine();
+				if(record == null) break;
 				String[] attribs = record.split(",");
+				if(attribs.length < 1) continue;
 				if(!attribs[1].contains(place)) continue;
 				
 				values = new float[attribs.length - 2];
