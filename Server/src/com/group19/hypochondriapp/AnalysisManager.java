@@ -117,8 +117,8 @@ public class AnalysisManager implements Runnable {
 			
 			short[] aroundCells = getAroundCells(i);
 			int count = 0;
-			float max = 0;
-			float min = 9999999;
+			//float max = 0;
+			//float min = 9999999;
 			returnData[i] = (float) Math.pow(input[i], 2)*SMOOTHING_SCALAR_1;
 			
 			for(int j = 0; j < aroundCells.length; j++)
@@ -127,11 +127,15 @@ public class AnalysisManager implements Runnable {
 				if(aroundCells[j] != -1)
 				{
 					
+					/*
+					
 					if(input[aroundCells[j]] > max)
 						max = input[aroundCells[j]];
 					
 					if(input[aroundCells[j]] < min)
 						min = input[aroundCells[j]];
+					
+					*/
 					
 					count++;
 					returnData[i] += (float) Math.pow(input[aroundCells[j]], 2)*SMOOTHING_SCALAR_2;
@@ -139,16 +143,23 @@ public class AnalysisManager implements Runnable {
 				}
 				
 			}
-			
+			/*
 			if((input[i] <= min) || (input[i] >= max))
 				returnData[i] = input[i];
 			else
 			{
 			
+			*/
+			
 				float divisableScalar = (float) (SMOOTHING_SCALAR_1 + count*SMOOTHING_SCALAR_2);
 				returnData[i] = (float) ((float) Math.pow(returnData[i], 0.5)/Math.pow(divisableScalar, 0.5));
+			
+			/*
+		
 			}
 			
+			
+			*/
 		}
 		
 		return returnData;
