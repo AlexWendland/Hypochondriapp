@@ -105,7 +105,7 @@ public class AnalysisManager implements Runnable {
 	}
 	
 	
-	//Smooths data4
+	//Smooths data.
 	public float[] smoothData(float[] input)
 	{
 		
@@ -114,9 +114,12 @@ public class AnalysisManager implements Runnable {
 		for(int i = 0; i < input.length; i++)
 		{
 			
+			
 			short[] aroundCells = getAroundCells(i);
 			int count = 0;
-			returnData[i] = (float) Math.pow(input[i]*SMOOTHING_SCALAR_1, 2);
+			float max = 0;
+			float min = 9999999;
+			returnData[i] = (float) Math.pow(input[i], 2)*SMOOTHING_SCALAR_1;
 			
 			for(int j = 0; j < aroundCells.length; j++)
 			{
@@ -124,15 +127,27 @@ public class AnalysisManager implements Runnable {
 				if(aroundCells[j] != -1)
 				{
 					
+					if(input[aroundCells[j]] > max)
+						input[aroundCells[j]] = max;
+					
+					if(input[aroundCells[j]] < min)
+						input[aroundCells[j]] = min;
+					
 					count++;
-					returnData[i] += (float) Math.pow(input[aroundCells[j]]*SMOOTHING_SCALAR_2, 2);
+					returnData[i] += (float) Math.pow(input[aroundCells[j]], 2)*SMOOTHING_SCALAR_2;
 					
 				}
 				
 			}
 			
-			float divisableScalar = (float) (Math.pow(SMOOTHING_SCALAR_1, 2) + count*Math.pow(SMOOTHING_SCALAR_2, 2));
-			returnData[i] = (float) ((float) Math.pow(returnData[i], 0.5)/Math.pow(divisableScalar, 0.5));
+			if((input[i] <= min) || (input[i] >= max))
+				returnData[i] = input[i];
+			else
+			{
+			
+				float divisableScalar = (float) (SMOOTHING_SCALAR_1 + count*SMOOTHING_SCALAR_2);
+				returnData[i] = (float) ((float) Math.pow(returnData[i], 0.5)/Math.pow(divisableScalar, 0.5));
+			}
 			
 		}
 		
