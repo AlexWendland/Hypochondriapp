@@ -30,7 +30,7 @@ public class AnalysisManager implements Runnable {
 	public static final byte DAY_OF_UPDATE = 0;
 	public static final short CELL_EFFECT = 1000;
 	public static final short SMOOTHING_SCALAR_1 = 1000;
-	public static final short SMOOTHING_SCALAR_2 = 50;
+	public static final short SMOOTHING_SCALAR_2 = 100;
 	
 	//Initiation of the model.
 	public void init() 
@@ -255,13 +255,54 @@ public class AnalysisManager implements Runnable {
 		
 		ArrayList<String> Tweets = MainManager.getTwitterManager().getTweets();
 		String[] PlaceNames = MainManager.getDataManager().getBoroughNames();
+		int geoUsed = 0;
 		
 		for(int k = 0; k < Tweets.size(); k++)
 		{
 			
 			String Place = Tweets.get(k);
-			
 			boolean ContinueNeeded = false;
+			try
+			{
+				
+				if(Character.isDigit(Place.charAt(0)))
+				{
+					
+					String[] coords = Place.split(",");
+					int cell = cordConv(Float.valueOf(coords[0]), Float.valueOf(coords[1]));
+					
+					if(cell != -1)
+					{
+						
+						short[] cellsAround = getAroundCells(cell);
+						int count = 0;
+						
+						for(int i = 0; i < cellsAround.length; i++)
+						{
+							
+							if(cellsAround[i] != -1)
+							{
+								
+								count++;
+								ill[cellsAround[i]] += TWITSCALAR/12;
+								
+							}
+							
+						}
+							
+						ill[cell] += (TWITSCALAR)*((12 - count)/12);
+						
+						geoUsed++;
+						ContinueNeeded = true;
+						
+					}
+					
+				}
+				
+			} catch (Exception e) { }
+			
+			if (ContinueNeeded)
+				continue;
 			
 			try
 			{
@@ -397,6 +438,8 @@ public class AnalysisManager implements Runnable {
 			
 		}
 		
+		MainManager.logMessage("#AnalysisManager: " + geoUsed + " Geo Location where used");
+		
 	}
 	
 	
@@ -481,7 +524,7 @@ public class AnalysisManager implements Runnable {
 	
 	
 	//Function is a called to provide a predicted future for a certain cell.
-	public static float[] prediction(float[] previousAverage, byte[] insightData, byte borough)
+	public static float[] prediction(float[] previousAverage, byte[] insightData, float[] dataLondon)
 	{
 		
 		float currentMinError = 999999999;
@@ -518,6 +561,43 @@ public class AnalysisManager implements Runnable {
 			
 		}
 			
+		if((dataLondon != null) && (dataLondon.length > 6))
+		{
+			
+			for(int i = 0; i < dataLondon.length - 6; i++)
+			{
+				
+				if((dataLondon[i] != -1) && (dataLondon[i+1] != -1) && (dataLondon[i+2] != -1) && (dataLondon[i+3] != -1) && (dataLondon[i+4] != -1) && (dataLondon[i+5] != -1) && (dataLondon[i+6] != -1))
+				{
+					
+					float error = 0;
+					
+					float scalar = previousAverage[0]/dataLondon[i + 4];
+						
+					if (scalar <= 0) 	continue;
+						
+					for(int j = 0; j < 4; j++)
+					{
+							
+						error += Math.pow((previousAverage[j+1] - dataLondon[3+i-j]*scalar),2);
+							
+					}
+						
+					error = (float) Math.pow(error, 0.5);
+						
+					if(error < currentMinError)
+					{
+							
+						currentMinError = error;
+						currentEstimate[0] = dataLondon[5+i]*scalar;
+						currentEstimate[1] = dataLondon[6+i]*scalar;
+							
+					}
+					
+				}
+				
+			}
+		}
 		return currentEstimate;
 		
 	}
@@ -1035,11 +1115,20 @@ public class AnalysisManager implements Runnable {
 		
 		byte[] insightData = getGoogleInsight();
 		float[][] previousData = getPreviousData();
+		String[] boroughNames = MainManager.getDataManager().getBoroughNames();
+		float[][] dataLondon = new float[33][0];
+		
+		for(int i = 0; i < 33; i++)
+		{
+			
+			dataLondon[i] = MainManager.getDataManager().getFluRates(boroughNames[i]);
+			
+		}
 		
 		for(int i = 0; i < 1600; i++)
 		{
 			
-			float[] predictedData = prediction(previousData[i], insightData, borough[i]);
+			float[] predictedData = prediction(previousData[i], insightData, dataLondon[borough[i] - 1]);
 			
 			currentDate = Calendar.getInstance();
 		    currentDate.setTime(new Date());
