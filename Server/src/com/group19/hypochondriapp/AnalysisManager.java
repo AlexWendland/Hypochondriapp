@@ -1056,16 +1056,16 @@ public class AnalysisManager implements Runnable {
 			String day = new String();
 			String inOut = new String();
 			
-			if((int)(k/2) == 0)
+			if((k==0)||(k==1))
 				day = DataManager.SUN;
 			
-			if((int)(k/2) == 1)
+			if((k==2)||(k==3))
 				day = DataManager.WEEK;
 				
 			else
 				day = DataManager.SAT;
 			
-			if(k%2 == 0)
+			if((k== 0) || (k==2) || (k==4))
 				inOut = DataManager.ENTER;
 			
 			else
@@ -1078,6 +1078,13 @@ public class AnalysisManager implements Runnable {
 				
 				StationInfo currentStation = MainManager.getDataManager().getNextStation();
 				
+				int add = 0;
+				
+				if((k== 0) || (k==2) || (k==4))
+					add = 0;
+				else
+					add = 1;
+				
 				if ((currentStation != null) && (currentStation.people != null) && (currentStation.people.length > (24*4 - 1)))
 				{
 					
@@ -1085,7 +1092,7 @@ public class AnalysisManager implements Runnable {
 					
 					for(int j = 0; j < 24*8 + 7; j++)
 					{
-						currentTransport[i*2 + (k%2)][j] += temp[j];
+						currentTransport[i*2 + add][j] += temp[j];
 					}
 					
 				}
@@ -1094,7 +1101,7 @@ public class AnalysisManager implements Runnable {
 					for(int j = 0; j < 24*8 + 7; j++)
 					{
 						
-						currentTransport[i*2 + (k%2)][j] += 0;
+						currentTransport[i*2 + add][j] += 0;
 						
 					}
 				}		
@@ -1459,7 +1466,7 @@ public class AnalysisManager implements Runnable {
 				if(max2 == 0)
 					newRatioData[i][j] = -128;
 				else
-					newRatioData[i][j] = (byte) ((dataToBeSent[i][j]*255/max2) - 128);
+					newRatioData[i][j] = (byte) ((ratioData[i][j]*255/max2) - 128);
 				
 			}	
 			
@@ -1495,7 +1502,7 @@ public class AnalysisManager implements Runnable {
 					update();
 						
 					MainManager.logMessage("#AnalysisManager: Prediction ended");
-						
+					
 					MainManager.getAppNetworkManager().updateModel(toBeSent);
 					
 				}
