@@ -68,6 +68,18 @@ public class AnalysisManager implements Runnable {
 	}
 	
 	
+	public void checkIll()
+	{
+		
+		for(int i = 0; i < 1600; i++)
+		{
+			
+			if((ill[i] < 0) || Float.isNaN(ill[i]))
+				ill[i] = 0;
+		}
+		
+	}
+	
 	//Gets the cells around any cell
 	public short[] getAroundCells(int num)
 	{
@@ -1113,6 +1125,7 @@ public class AnalysisManager implements Runnable {
 		
 	}
 	
+	
 	//If the model is required to generate a new packet for the app, this will run.
 	public void update()
 	{
@@ -1147,12 +1160,13 @@ public class AnalysisManager implements Runnable {
 		{
 			
 			float[] predictedData = prediction(previousData[i], insightData, dataLondon[borough[i] - 1]);
-			
+				
 			currentDate = Calendar.getInstance();
 		    currentDate.setTime(new Date());
 			
 			change[0][i] = ((ill[i] - predictedData[0])/(7*24*4 - 1));
 			change[1][i] = (predictedData[0] - predictedData[1])/7;
+			
 			
 		}
 		
@@ -1166,6 +1180,7 @@ public class AnalysisManager implements Runnable {
 		
 		for(int i = 0; i < 1600; i++)
 			ratioData[0][i] = (ill[i]*10000)/pop[i];
+		
 		
 		for(int i = 1; i < 24*8 + 7; i++)
 		{
@@ -1421,10 +1436,12 @@ public class AnalysisManager implements Runnable {
 				
 			}
 			
+			checkIll();
+			
 			dataToBeSent[i] = ill;
 			
 			for(int j = 0; j < 1600; j++)	
-				ratioData[i][j] = (ill[i]*10000)/pop[i];
+				ratioData[i][j] = (ill[j]*10000)/pop[j];
 			
 		}
 		
@@ -1432,27 +1449,6 @@ public class AnalysisManager implements Runnable {
 		byte[][] newIllData = new byte[24*8+7][1600];
 		float[] newRatioScalar = new float[24*8+7];
 		byte[][] newRatioData = new byte[24*8+7][1600];
-		
-		/*
-		
-		float max = 0;
-		
-		for(int i = 0; i < 1600; i++)
-		{
-			
-			if(ratioData[0][i] > max)
-			{
-				
-				max = ratioData[0][i];
-				MainManager.logMessage("#AnalysisManager: New max " + ratioData[0][i] + " at point " + i);
-				
-			}
-			
-		}
-		
-		MainManager.logMessage("#AnalysisManager: Final max " + max);
-		
-		*/
 		
 		for(int i = 0; i < 24*8 + 7; i++)
 		{
@@ -1466,15 +1462,18 @@ public class AnalysisManager implements Runnable {
 			{
 				
 				if(dataToBeSent[i][j] > max1)
+				{
 					max1 = dataToBeSent[i][j];
-				
+					
+				}	
+					
 				if(ratioData[i][j] > max2)
 				{
 					max2 = ratioData[i][j];
 				}
 					
 			}
-			
+					
 			newIllScalar[i] = max1;
 			newRatioScalar[i] = max2;
 			
@@ -1500,7 +1499,6 @@ public class AnalysisManager implements Runnable {
 		toBeSent.illScalar = newIllScalar;
 		toBeSent.ratioData = newRatioData;
 		toBeSent.ratioScalar = newRatioScalar;		
-		
 		
 	}
 	
