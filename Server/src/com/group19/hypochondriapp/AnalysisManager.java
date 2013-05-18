@@ -1165,8 +1165,8 @@ public class AnalysisManager implements Runnable {
 		recordData(currentDate);
 		
 		for(int i = 0; i < 1600; i++)
-			ratioData[0][i] = ill[i]/pop[i];
-			
+			ratioData[0][i] = (ill[i]*10000)/pop[i];
+		
 		for(int i = 1; i < 24*8 + 7; i++)
 		{
 			
@@ -1424,7 +1424,7 @@ public class AnalysisManager implements Runnable {
 			dataToBeSent[i] = ill;
 			
 			for(int j = 0; j < 1600; j++)	
-				ratioData[i][j] = ill[j]/pop[j];
+				ratioData[i][j] = (ill[i]*10000)/pop[i];
 			
 		}
 		
@@ -1432,6 +1432,27 @@ public class AnalysisManager implements Runnable {
 		byte[][] newIllData = new byte[24*8+7][1600];
 		float[] newRatioScalar = new float[24*8+7];
 		byte[][] newRatioData = new byte[24*8+7][1600];
+		
+		/*
+		
+		float max = 0;
+		
+		for(int i = 0; i < 1600; i++)
+		{
+			
+			if(ratioData[0][i] > max)
+			{
+				
+				max = ratioData[0][i];
+				MainManager.logMessage("#AnalysisManager: New max " + ratioData[0][i] + " at point " + i);
+				
+			}
+			
+		}
+		
+		MainManager.logMessage("#AnalysisManager: Final max " + max);
+		
+		*/
 		
 		for(int i = 0; i < 24*8 + 7; i++)
 		{
@@ -1448,8 +1469,10 @@ public class AnalysisManager implements Runnable {
 					max1 = dataToBeSent[i][j];
 				
 				if(ratioData[i][j] > max2)
+				{
 					max2 = ratioData[i][j];
-				
+				}
+					
 			}
 			
 			newIllScalar[i] = max1;
@@ -1496,7 +1519,7 @@ public class AnalysisManager implements Runnable {
 					
 				if(MainManager.getTwitterManager().isUpdated())
 				{
-						
+					
 					MainManager.logMessage("#AnalysisManager: Starting prediction");
 						
 					update();
