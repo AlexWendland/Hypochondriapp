@@ -1516,17 +1516,14 @@ public class AnalysisManager implements Runnable {
 			
 			ill = dataToBeSent[i];
 			
-			/*
-			
 			for(int j = 0; j < 269; j++)
 			{	
 				
-				movePeople(stationPosition[j*2], stationPosition[j*2 + 1], transportData[j*2][i], getAverageIll());
-				movePeople(stationPosition[j*2], stationPosition[j*2 + 1], -transportData[j*2 + 1][i], getAverageIll());
+				float temp = getAverageIll();
+				movePeople(stationPosition[j*2], stationPosition[j*2 + 1], transportData[j*2][i], temp);
+				movePeople(stationPosition[j*2], stationPosition[j*2 + 1], -transportData[j*2 + 1][i], temp);
 				
 			}
-			
-			*/
 			
 			checkIll();
 			
