@@ -345,8 +345,8 @@ public class AnalysisManager implements Runnable {
 		String[] PlaceNames = MainManager.getDataManager().getBoroughNames();
 		int geoUsed = 0;
 		
-		if(Tweets.size() < 500)
-			TWITSCALAR = 1000;
+		if(Tweets.size() < 1000)
+			TWITSCALAR = (short) (100*(2000/Tweets.size()));
 		
 		for(int k = 0; k < Tweets.size(); k++)
 		{
