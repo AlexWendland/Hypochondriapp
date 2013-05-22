@@ -108,7 +108,7 @@ public class TwitterManager implements Runnable
 		query.setResultType(Query.RECENT);
 		query.setGeoCode(new GeoLocation(51.5, -0.1), 30.0, Query.MILES);
 		query.setCount(100);
-		query.setQuery("\"feel sick\" OR \"feeling sick\" OR \"sneezing\" OR \"gotten sick\" OR \"flu\" OR \"influenza\" OR \"bedridden\" OR \"cough\"");
+		query.setQuery("\"feel sick\" OR \"feeling sick\" OR \"sneezing\" OR \"gotten sick\" OR \"flu\" OR \"influenza\" OR \"bedridden\" OR \"cough\" OR \"sick\" OR \"ill\" OR \"tired\"");
 		
 		MainManager.logMessage("#TwitterManager: Updating tweets...");
 		
