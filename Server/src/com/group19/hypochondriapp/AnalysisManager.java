@@ -1516,6 +1516,8 @@ public class AnalysisManager implements Runnable {
 			
 			ill = dataToBeSent[i];
 			
+			/*
+			
 			for(int j = 0; j < 269; j++)
 			{	
 				
@@ -1523,6 +1525,8 @@ public class AnalysisManager implements Runnable {
 				movePeople(stationPosition[j*2], stationPosition[j*2 + 1], -transportData[j*2 + 1][i], getAverageIll());
 				
 			}
+			
+			*/
 			
 			checkIll();
 			
@@ -1615,9 +1619,6 @@ public class AnalysisManager implements Runnable {
 					update();
 						
 					MainManager.logMessage("#AnalysisManager: Prediction ended");
-					
-					for(int i = 0; i < 1600; i++)
-						System.out.println(toBeSent.illData[4][i]);
 					
 					MainManager.getAppNetworkManager().updateModel(toBeSent);
 					
