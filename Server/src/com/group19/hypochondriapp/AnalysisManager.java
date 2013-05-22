@@ -25,7 +25,10 @@ public class AnalysisManager implements Runnable {
 	
 	//Files used and constants.
 	File dataStore = new File("./res/AnalysisManager/DataStore.txt");
-	public static final short TWITSCALAR = 100;
+	File stations = new File("./res/AnalysisManager/Stations.txt");	
+	File johnsFile = new File("./res/AnalysisManager/JohnsFile.txt");	
+	
+	public static short TWITSCALAR = 100;
 	public static final byte TWITTER_CELLS = 100;  
 	public static final byte DAY_OF_UPDATE = 0;
 	public static final short CELL_EFFECT = 1000;
@@ -68,6 +71,67 @@ public class AnalysisManager implements Runnable {
 	}
 	
 	
+	public void johnsFunction()
+	{
+		
+		String[] Temp = new String[269];
+		try{
+			BufferedReader br = new BufferedReader(new FileReader(stations));
+			for(int i = 0; i < 269; i++)
+			{
+				Temp[i] = br.readLine();
+				Temp[i] = Temp[i].trim();
+			}
+			br.close();
+		} catch (Exception e) 
+		{ 
+			
+			System.out.println("ARGHHH");
+			
+		}
+		
+		String output = new String();
+		
+		MainManager.getDataManager().loadStationTravel(DataManager.EXIT, DataManager.SUN);
+		
+		for (int i = 0; i < 269; i++) 
+		{
+			
+			StationInfo currentStation = MainManager.getDataManager().getNextStation();
+			if((currentStation != null) && (currentStation.coordinates != null) && (currentStation.people != null) && (cordConv(currentStation.coordinates[1], currentStation.coordinates[0]) > -1))
+			{
+				output += Temp[i] + ":" + currentStation.coordinates[0] + "," + currentStation.coordinates[1] + "\n";
+			} else
+			{
+				output += Temp[i] + ":0,0\n"; 
+			}
+			
+		}
+		try{
+			if (!johnsFile.exists()) 
+				johnsFile.createNewFile();
+		} catch (Exception e)
+		{
+			
+			System.out.println("Silly");
+			
+		}
+		
+		try{
+			
+			BufferedWriter tempBW = new BufferedWriter(new FileWriter(johnsFile.getAbsoluteFile()));
+			tempBW.write(output);
+			tempBW.close();
+			
+		} catch (Exception e)
+		{
+			
+			MainManager.logMessage("ARGGGGGGHHHHHH");
+			
+		}
+	}
+	
+	
 	public void checkIll()
 	{
 		
@@ -79,6 +143,7 @@ public class AnalysisManager implements Runnable {
 		}
 		
 	}
+	
 	
 	//Gets the cells around any cell
 	public short[] getAroundCells(int num)
@@ -280,6 +345,9 @@ public class AnalysisManager implements Runnable {
 		String[] PlaceNames = MainManager.getDataManager().getBoroughNames();
 		int geoUsed = 0;
 		
+		if(Tweets.size() < 500)
+			TWITSCALAR = 1000;
+		
 		for(int k = 0; k < Tweets.size(); k++)
 		{
 			
@@ -461,6 +529,7 @@ public class AnalysisManager implements Runnable {
 			
 		}
 		
+		TWITSCALAR = 100;
 		MainManager.logMessage("#AnalysisManager: " + geoUsed + " Geo Location where used");
 		
 	}
@@ -682,7 +751,12 @@ public class AnalysisManager implements Runnable {
 		for(int i = 0; i < readInData.length - 1; i++)
 			content += readInData[i] + " - ";
 		
-		String[] Temp = readInData[readInData.length - 1].split(" ");
+		String[] Temp = new String[0];
+		
+		try
+		{
+			Temp = readInData[readInData.length - 1].split(" ");
+		} catch (Exception e) { }
 		
 		if(needToUpdate)
 		{
@@ -700,14 +774,28 @@ public class AnalysisManager implements Runnable {
 		} else
 		{
 			
-			int num = Integer.valueOf(Temp[0]) + 1;
+			int num = 1;
+			if(Temp.length > 0)
+			{
+				num = Integer.valueOf(Temp[0]) + 1;
 			
-			content += num + " ";
+				content += num + " ";
 			
-			for(int i = 0; i < 1600; i++)
-				content += ((ill[i] + (Float.valueOf(Temp[i])*(num-1)))/num) + " ";
+				for(int i = 0; i < 1600; i++)
+					content += ((ill[i] + (Float.valueOf(Temp[i])*(num-1)))/num) + " ";
 			
-			content += "- ";
+				content += "- ";
+			} else
+			{
+				
+				content += num + " ";
+				
+				for(int i = 0; i < 1600; i++)
+					content += (ill[i] + " ");
+			
+				content += "- ";
+				
+			}
 			
 		}
 		
@@ -1454,6 +1542,7 @@ public class AnalysisManager implements Runnable {
 		{
 			
 			dataToBeSent[i] = smoothData(dataToBeSent[i]);
+			ratioData[i] = smoothData(ratioData[i]);
 			
 			float max1 = 0;
 			float max2 = 0;
@@ -1509,6 +1598,7 @@ public class AnalysisManager implements Runnable {
 		
 		init();
 		
+		
 		while((!MainManager.isShutdown()) && (!MainManager.isAnalysisShutdown()))
 		{
 			
@@ -1518,11 +1608,16 @@ public class AnalysisManager implements Runnable {
 				if(MainManager.getTwitterManager().isUpdated())
 				{
 					
+					
+					
 					MainManager.logMessage("#AnalysisManager: Starting prediction");
 						
 					update();
 						
 					MainManager.logMessage("#AnalysisManager: Prediction ended");
+					
+					for(int i = 0; i < 1600; i++)
+						System.out.println(toBeSent.illData[4][i]);
 					
 					MainManager.getAppNetworkManager().updateModel(toBeSent);
 					
@@ -1549,8 +1644,9 @@ public class AnalysisManager implements Runnable {
 					catch (InterruptedException e) { }
 					
 				}
+				
 			}
-							
+					
 		}
 		
 		MainManager.logMessage("#AnalysisManager: Shutting down ...");

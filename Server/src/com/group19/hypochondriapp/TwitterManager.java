@@ -142,7 +142,7 @@ public class TwitterManager implements Runnable
 				String location = null;
 				
 				long tweetTime = resultList.get(i).getCreatedAt().getTime();
-				if(currentTime - tweetTime > MILLIS_IN_DAY*2) //Using 48 hours
+				if(currentTime - tweetTime > MILLIS_IN_DAY*7) //Using 48 hours
 				{
 					finished = true;
 					break;
