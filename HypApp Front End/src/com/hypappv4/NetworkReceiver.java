@@ -12,12 +12,16 @@ import android.util.Log;
 
 public class NetworkReceiver 
 {
-	public static final int PORT = 59999; //Port to connect to on server
-	public static final String IP_ADDRESS = "192.168.0.2"; //IP of server
+	public static final int PORT = 8033; //Port to connect to on server
+	public static final String IP_ADDRESS = "joshua.dcs.warwick.ac.uk"; //IP of server
 	
 	private boolean done = false;
 	private Thread thread = null;
 	private AppDataPacket dataModel = null;
+	
+	public boolean IOexcep = false;
+	public boolean UHexcep = false;
+	public boolean CNFexcep = false;
 	
 	public NetworkReceiver()
 	{
@@ -65,14 +69,17 @@ public class NetworkReceiver
 			}
 			catch(UnknownHostException e)
 			{
+				UHexcep = true;
 				Log.e(null, "Unknown Host");
 			}
 			catch(IOException e)
 			{
+				IOexcep = true;
 				Log.e(null, "IO");
 			}
 			catch(ClassNotFoundException e)
 			{
+				CNFexcep = true;
 				Log.e(null, "Class Not Found");
 			}
 		}

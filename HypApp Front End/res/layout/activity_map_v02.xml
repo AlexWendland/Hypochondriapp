@@ -1,16 +1,17 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="0px"
     android:paddingLeft="0px"
     android:paddingRight="0px"
     android:paddingTop="0px"
+    
     tools:context=".MapV02" >
 
-    
-
-	<fragment
+	
+	<fragment 
         android:id="@+id/map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -23,13 +24,101 @@
         android:layout_alignParentLeft="true"
         android:layout_marginBottom="18dp"
         android:layout_marginLeft="18dp"
-        android:orientation="vertical" >
+        android:orientation="horizontal" >
 
         <com.hypappv4.Slider
             android:id="@+id/slider"
             android:layout_width="370dp"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:progressDrawable="@drawable/progressback"
+            
+             />
+
+    </LinearLayout>
+	
+    
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="26dp"
+        android:layout_marginTop="18dp"
+        android:layout_marginLeft="70dp"
+        android:orientation="vertical"
+        android:background="@drawable/back"
+        android:gravity="center_vertical"
+        android:minHeight="30dp"
+        android:minWidth="300dp" >
+
+        <TextView
+            android:id="@+id/timeheader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Prediction"
+            android:layout_margin="10dp"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+        
+        <TextView
+            android:id="@+id/timeOutPut"
+            android:layout_width="fill_parent"
+            android:layout_marginRight="10dp"
+            android:layout_height="wrap_content"
+            android:text="Time"
+            android:layout_margin="10dp"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+       
 
     </LinearLayout>
 
+    <RelativeLayout
+        android:id="@+id/splash"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:background="#FFFFFF" >
+
+        <ImageView
+            android:id="@+id/imageView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/linearLayout1"
+            android:src="@drawable/hyplogosm" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:gravity="center_horizontal"
+            android:text="Hypochondriapp, created by Group 19. Map service courtesy of Google inc., Data used in illness analysis supplied from public Twitter accounts and data.london.gov"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        <LinearLayout
+            android:id="@+id/linearLayout1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/textView2"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="102dp" >
+
+            <ProgressBar
+                android:id="@+id/progressBar1"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/textView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fitsSystemWindows="true"
+                android:text="\nLoading..."
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+        </LinearLayout>
+        
+    </RelativeLayout>
+    
 </RelativeLayout>

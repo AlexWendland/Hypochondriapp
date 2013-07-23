@@ -1,9 +1,26 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:showAsAction="never"
-        android:title="@string/action_settings"/>
+    <group android:id="@+id/RorQ" android:visible="true" android:checkableBehavior="single">
+        
+        <item android:id="@+id/quantityMenuItem"
+             android:title="Display Quantities"
+              android:checkable="true"
+              android:checked="true"
+              android:visible="true" 
+              android:orderInCategory="10"/>
+            
+        <item android:id="@+id/ratioMenuItem" 
+            android:title="Display Ratios" 
+            android:checked="false" 
+            android:orderInCategory="98" 
+            android:checkable="true" 
+            android:visible="true"/>
+            
+    </group>
+    <item android:id="@+id/showStationMarkers" android:title="Show Station Markers" android:checked="true" android:checkable="true"></item>
+    <item android:id="@+id/mapTypeSwitch" android:title="Switch to Satellite" android:orderInCategory="150" android:checkable="false"></item>
+    
+    
+    
 
 </menu>
